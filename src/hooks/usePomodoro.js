@@ -1,5 +1,6 @@
-// usePomodoro.js — Focus timer with work/break modes and session tracking
+// usePomodoro.js — Focus timer with work/break modes and session tracking via API
 import { useState, useEffect, useCallback } from 'react'
+import { fetchAPI } from '../utils/api'
 
 const WORK_SECS  = 25 * 60
 const SHORT_SECS =  5 * 60
@@ -7,22 +8,28 @@ const LONG_SECS  = 15 * 60
 const MODE_TIMES = { work: WORK_SECS, short: SHORT_SECS, long: LONG_SECS }
 
 export function usePomodoro(user) {
-  const getStorageKey = useCallback(() => {
-    const userId = user?.id || 'guest'
-    return `taskflow_${userId}_analytics`
-  }, [user?.id])
-
   const [mode, setMode]       = useState('work')   // 'work' | 'short' | 'long'
   const [timeLeft, setTimeLeft] = useState(WORK_SECS)
   const [running, setRunning]   = useState(false)
-  const [sessions, setSessions] = useState(
-    () => parseInt(localStorage.getItem(getStorageKey()) || '0', 10)
-  )
+  const [sessions, setSessions] = useState(0)
 
-  // Reload sessions reactively when user session changes
+  const fetchPomodoro = useCallback(async () => {
+    if (!user) {
+      setSessions(0)
+      return
+    }
+    try {
+      const data = await fetchAPI('/pomodoro')
+      setSessions(data.sessionCount || 0)
+    } catch (e) {
+      console.error('Failed to fetch pomodoro:', e)
+    }
+  }, [user])
+
   useEffect(() => {
-    setSessions(parseInt(localStorage.getItem(getStorageKey()) || '0', 10))
-  }, [user?.id, getStorageKey])
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchPomodoro()
+  }, [fetchPomodoro])
 
   // Countdown
   useEffect(() => {
@@ -34,14 +41,22 @@ export function usePomodoro(user) {
   // Handle completion
   useEffect(() => {
     if (running && timeLeft === 0) {
-      setTimeout(() => {
+      setTimeout(async () => {
         setRunning(false)
         if (mode === 'work') {
-          setSessions(s => {
-            const next = s + 1
-            localStorage.setItem(getStorageKey(), next)
-            return next
-          })
+          const nextSessions = sessions + 1
+          setSessions(nextSessions)
+          
+          try {
+            await fetchAPI('/pomodoro', {
+              method: 'POST',
+              body: JSON.stringify({ sessionCount: nextSessions })
+            })
+          } catch (e) {
+            console.error('Failed to save session:', e)
+            setSessions(sessions) // revert
+          }
+
           // Auto-switch to short break
           setMode('short')
           setTimeLeft(SHORT_SECS)
@@ -51,7 +66,7 @@ export function usePomodoro(user) {
         }
       }, 0)
     }
-  }, [timeLeft, running, mode, getStorageKey])
+  }, [timeLeft, running, mode, sessions])
 
   const toggle    = useCallback(() => setRunning(r => !r), [])
   const reset     = useCallback(() => { setRunning(false); setTimeLeft(MODE_TIMES[mode]) }, [mode])

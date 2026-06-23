@@ -1,11 +1,6 @@
-// useHabits.js — Habit tracking with streaks and daily completions
-import { useState, useEffect, useCallback } from 'react'
-
-const DEFAULT_HABITS = [
-  { id: 'h_default_1', name: 'Morning workout', icon: '💪', color: '#f43f5e', completions: {}, createdAt: new Date().toISOString() },
-  { id: 'h_default_2', name: 'Read 20 minutes', icon: '📚', color: '#f59e0b', completions: {}, createdAt: new Date().toISOString() },
-  { id: 'h_default_3', name: 'Drink 8 glasses', icon: '💧', color: '#22d3ee', completions: {}, createdAt: new Date().toISOString() },
-]
+// useHabits.js — Habit tracking with streaks and daily completions using API
+import { useState, useCallback, useEffect } from 'react'
+import { fetchAPI } from '../utils/api'
 
 const today = () => new Date().toISOString().split('T')[0]
 
@@ -16,76 +11,83 @@ const dateStr = (daysAgo = 0) => {
 }
 
 export function useHabits(user) {
-  const getStorageKey = useCallback(() => {
-    const userId = user?.id || 'guest'
-    return `taskflow_${userId}_habits`
-  }, [user?.id])
+  const [habits, setHabits] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const load = useCallback(() => {
+  const fetchHabits = useCallback(async () => {
+    if (!user) {
+      setHabits([])
+      setLoading(false)
+      return
+    }
     try {
-      const raw = localStorage.getItem(getStorageKey())
-      return raw ? JSON.parse(raw) : DEFAULT_HABITS
-    } catch { return DEFAULT_HABITS }
-  }, [getStorageKey])
-
-  const save = useCallback((habitsList) => {
-    try {
-      localStorage.setItem(getStorageKey(), JSON.stringify(habitsList))
+      setLoading(true)
+      const data = await fetchAPI('/habits')
+      setHabits(data)
     } catch (e) {
-      console.warn('Failed to save habits', e)
+      console.error('Failed to fetch habits:', e)
+    } finally {
+      setLoading(false)
     }
-  }, [getStorageKey])
+  }, [user])
 
-  const [habits, setHabits] = useState(() => load())
-
-  // Reload habits reactively when user session changes
   useEffect(() => {
-    setHabits(load())
-  }, [user?.id, load])
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchHabits()
+  }, [fetchHabits])
 
-  const persist = useCallback((next) => {
-    setHabits(next)
-    save(next)
-  }, [save])
-
-  const addHabit = useCallback((data) => {
-    const h = {
-      id: `h_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-      name: data.name.trim(),
-      icon: data.icon || '⭐',
-      color: data.color || '#7c6af7',
-      completions: {},
-      createdAt: new Date().toISOString(),
+  const addHabit = useCallback(async (data) => {
+    try {
+      const newHabit = await fetchAPI('/habits', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: data.name.trim(),
+          icon: data.icon || '⭐',
+          color: data.color || '#7c6af7',
+          completions: {},
+        })
+      })
+      setHabits(prev => [...prev, newHabit])
+    } catch (e) {
+      console.error('Failed to add habit:', e)
     }
-    setHabits(prev => {
-      const next = [...prev, h]
-      save(next)
-      return next
-    })
-  }, [save])
+  }, [])
 
-  const toggleHabit = useCallback((id, date = today()) => {
-    setHabits(prev => {
-      const next = prev.map(h =>
-        h.id === id
-          ? { ...h, completions: { ...h.completions, [date]: !h.completions[date] } }
-          : h
-      )
-      save(next)
-      return next
-    })
-  }, [save])
+  const toggleHabit = useCallback(async (id, date = today()) => {
+    let previousHabits = habits
+    let targetCompletions = {}
+    setHabits(prev => prev.map(h => {
+      if (h.id === id) {
+        targetCompletions = { ...h.completions, [date]: !h.completions[date] }
+        return { ...h, completions: targetCompletions }
+      }
+      return h
+    }))
+    try {
+      await fetchAPI(`/habits/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ completions: targetCompletions })
+      })
+    } catch (e) {
+      console.error('Failed to toggle habit:', e)
+      setHabits(previousHabits) // revert
+    }
+  }, [habits])
 
-  const deleteHabit = useCallback((id) => {
-    setHabits(prev => {
-      const next = prev.filter(h => h.id !== id)
-      save(next)
-      return next
-    })
-  }, [save])
+  const deleteHabit = useCallback(async (id) => {
+    const previousHabits = habits
+    setHabits(prev => prev.filter(h => h.id !== id))
+    try {
+      await fetchAPI(`/habits/${id}`, { method: 'DELETE' })
+    } catch (e) {
+      console.error('Failed to delete habit:', e)
+      setHabits(previousHabits) // revert
+    }
+  }, [habits])
 
   // Calculate current streak (consecutive days ending today or yesterday)
   const getStreak = useCallback((habit) => {
+    if (!habit || !habit.completions) return 0
     let streak = 0
     for (let i = 0; i < 365; i++) {
       const d = dateStr(i)
@@ -101,16 +103,17 @@ export function useHabits(user) {
       const ago = n - 1 - i
       const d = dateStr(ago)
       const label = new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' })
-      return { date: d, label, done: !!habit.completions[d] }
+      return { date: d, label, done: !!(habit?.completions?.[d]) }
     })
   }, [])
 
-  const completedToday = habits.filter(h => h.completions[today()]).length
+  const completedToday = habits.filter(h => h.completions && h.completions[today()]).length
   const totalToday = habits.length
   const longestStreak = habits.reduce((max, h) => Math.max(max, getStreak(h)), 0)
 
   return {
     habits,
+    loading,
     addHabit,
     toggleHabit,
     deleteHabit,

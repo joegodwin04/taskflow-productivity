@@ -98,9 +98,8 @@ function getGreeting() {
   return { text: 'Working late', emoji: '🌙' }
 }
 
-export default function Dashboard({ stats, todos, onNavigate }) {
-  const user = JSON.parse(localStorage.getItem('tf_user') || '{}')
-  const userName = user.name ? user.name.split(' ')[0] : 'Builder'
+export default function Dashboard({ stats, todos, onNavigate, user }) {
+  const userName = user?.name ? user.name.split(' ')[0] : 'Builder'
   const greeting = getGreeting()
   const recentTodos = [...todos].sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5)
   const catStats = CATEGORIES.map(c => ({
@@ -154,7 +153,7 @@ export default function Dashboard({ stats, todos, onNavigate }) {
       <div className={styles.row3}>
         {/* Pomodoro */}
         <motion.div variants={item}>
-          <PomodoroTimer compact />
+          <PomodoroTimer compact user={user} />
         </motion.div>
 
         {/* Productivity ring widget */}
@@ -194,7 +193,7 @@ export default function Dashboard({ stats, todos, onNavigate }) {
 
       {/* ── Row 4: Habit Tracker (full width) ── */}
       <motion.div variants={item}>
-        <HabitTracker />
+        <HabitTracker user={user} />
       </motion.div>
 
       {/* ── Row 5: Analytics + Goals ── */}
@@ -203,7 +202,7 @@ export default function Dashboard({ stats, todos, onNavigate }) {
           <AnalyticsChart todos={todos} stats={stats} />
         </motion.div>
         <motion.div variants={item}>
-          <GoalTracker />
+          <GoalTracker user={user} />
         </motion.div>
       </div>
 

@@ -1,87 +1,87 @@
-// AnalyticsChart.jsx — SVG 7-day bar chart with theme-aware colors + rich empty state
+// AnalyticsChart.jsx — Pure CSS flex bar chart. No SVG misalignment possible.
 import { motion } from 'framer-motion'
 import { CATEGORIES } from '../hooks/useTodos'
 import { useTheme } from '../context/ThemeContext'
 import styles from './AnalyticsChart.module.css'
 
+// Convert any date value to a local YYYY-MM-DD string
+function toLocalDateStr(dateVal) {
+  if (!dateVal) return null
+  const d = typeof dateVal === 'string' ? new Date(dateVal) : dateVal
+  if (isNaN(d.getTime())) return null
+  const year  = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day   = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function getLast7Days(todos) {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
-    const ds    = d.toISOString().split('T')[0]
+    const ds    = toLocalDateStr(d)
     const label = d.toLocaleDateString('en-US', { weekday: 'short' })
     return {
       date:      ds,
       label,
-      created:   todos.filter(t => t.createdAt?.startsWith(ds)).length,
-      completed: todos.filter(t => t.completedAt?.startsWith(ds)).length,
+      created:   todos.filter(t => toLocalDateStr(t.createdAt)   === ds).length,
+      completed: todos.filter(t => toLocalDateStr(t.completedAt) === ds).length,
     }
   })
 }
 
-function BarChart({ days, theme }) {
+// Pure CSS flex chart — each day column holds its bars + label.
+// This guarantees perfect bar-to-label alignment at any container width.
+function BarChart({ days }) {
   const maxVal = Math.max(...days.flatMap(d => [d.created, d.completed]), 1)
-  const BAR_W = 7
-
-  // Theme-aware grid line color
-  const gridColor = theme === 'light'
-    ? 'rgba(124,106,247,0.07)'
-    : 'rgba(255,255,255,0.05)'
 
   return (
-    <div className={styles.chartArea}>
-      <svg className={styles.svg} viewBox="0 0 400 140" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="createdGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7c6af7" stopOpacity="0.9"/>
-            <stop offset="100%" stopColor="#7c6af7" stopOpacity="0.35"/>
-          </linearGradient>
-          <linearGradient id="completedGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#10b981" stopOpacity="0.9"/>
-            <stop offset="100%" stopColor="#10b981" stopOpacity="0.35"/>
-          </linearGradient>
-        </defs>
-
-        {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map(f => (
-          <line key={f} x1="0" x2="400" y1={f * 120 + 5} y2={f * 120 + 5}
-            stroke={gridColor} strokeWidth="1" />
+    <div className={styles.chartOuter}>
+      {/* Y-axis grid lines — purely decorative, behind the bars */}
+      <div className={styles.gridLines}>
+        {[0, 25, 50, 75, 100].map(pct => (
+          <div key={pct} className={styles.gridLine} style={{ bottom: `${pct}%` }} />
         ))}
+      </div>
 
-        {days.map((d, i) => {
-          const cx = (i + 0.5) * (400 / days.length)
-          const createdH   = (d.created   / maxVal) * 110
-          const completedH = (d.completed / maxVal) * 110
+      {/* Day columns */}
+      <div className={styles.barsRow}>
+        {days.map((day, i) => {
+          const createdPct   = (day.created   / maxVal) * 100
+          const completedPct = (day.completed / maxVal) * 100
+
           return (
-            <g key={d.date}>
-              {/* Created bar */}
-              <motion.rect
-                x={cx - BAR_W - 2} y={120 - createdH + 5}
-                width={BAR_W} height={Math.max(createdH, 2)}
-                rx="3" fill="url(#createdGrad)"
-                initial={{ height: 0, y: 125 }}
-                animate={{ height: Math.max(createdH, 2), y: 120 - createdH + 5 }}
-                transition={{ duration: 0.9, ease: [0.16,1,0.3,1], delay: i * 0.06 }}
-              />
-              {/* Completed bar */}
-              <motion.rect
-                x={cx + 2} y={120 - completedH + 5}
-                width={BAR_W} height={Math.max(completedH, 2)}
-                rx="3" fill="url(#completedGrad)"
-                initial={{ height: 0, y: 125 }}
-                animate={{ height: Math.max(completedH, 2), y: 120 - completedH + 5 }}
-                transition={{ duration: 0.9, ease: [0.16,1,0.3,1], delay: i * 0.06 + 0.04 }}
-              />
-            </g>
+            <div key={day.date} className={styles.dayCol}>
+              {/* Bars area — grows to fill all available height */}
+              <div className={styles.barsArea}>
+                {/* Created bar (violet) */}
+                <div className={styles.barWrap}>
+                  <motion.div
+                    className={styles.bar}
+                    style={{ '--bar-color': '#7c6af7' }}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1, height: `${Math.max(createdPct, 3)}%` }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 }}
+                    title={`Created: ${day.created}`}
+                  />
+                </div>
+                {/* Completed bar (emerald) */}
+                <div className={styles.barWrap}>
+                  <motion.div
+                    className={styles.bar}
+                    style={{ '--bar-color': '#10b981' }}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1, height: `${Math.max(completedPct, 3)}%` }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 + 0.04 }}
+                    title={`Completed: ${day.completed}`}
+                  />
+                </div>
+              </div>
+              {/* Label — always directly below its bars */}
+              <span className={styles.xLabel}>{day.label}</span>
+            </div>
           )
         })}
-      </svg>
-
-      {/* X labels */}
-      <div className={styles.xLabels}>
-        {days.map(d => (
-          <span key={d.date} className={styles.xLabel}>{d.label}</span>
-        ))}
       </div>
     </div>
   )
@@ -89,10 +89,10 @@ function BarChart({ days, theme }) {
 
 export default function AnalyticsChart({ todos, stats }) {
   const { theme } = useTheme()
-  const days   = getLast7Days(todos)
+  const days           = getLast7Days(todos)
   const totalCreated   = days.reduce((s, d) => s + d.created, 0)
   const totalCompleted = days.reduce((s, d) => s + d.completed, 0)
-  const hasData = todos.length > 0
+  const hasData        = todos.length > 0
 
   // Category stats
   const catStats = CATEGORIES.map(cat => ({
@@ -102,7 +102,7 @@ export default function AnalyticsChart({ todos, stats }) {
   })).filter(c => c.count > 0)
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} data-theme={theme}>
       <div className={styles.header}>
         <h3 className={styles.title}>Weekly Activity</h3>
         <span className={styles.sub}>Last 7 days</span>
@@ -112,9 +112,9 @@ export default function AnalyticsChart({ todos, stats }) {
         /* ── Rich empty state ── */
         <div className={styles.emptyState}>
           <span className={styles.emptyEmoji}>📊</span>
-          <span className={styles.emptyTitle}>No data yet</span>
+          <span className={styles.emptyTitle}>No activity yet</span>
           <span className={styles.emptyText}>
-            Add tasks and complete them to see your productivity analytics here.
+            Add tasks and complete them to see your weekly productivity chart here.
           </span>
         </div>
       ) : (
@@ -150,7 +150,7 @@ export default function AnalyticsChart({ todos, stats }) {
           </div>
 
           {/* Chart */}
-          <BarChart days={days} theme={theme} />
+          <BarChart days={days} />
 
           {/* Category stats */}
           {catStats.length > 0 && (
@@ -164,8 +164,8 @@ export default function AnalyticsChart({ todos, stats }) {
                     <motion.div
                       className={styles.catBarFill}
                       initial={{ width: 0 }}
-                      animate={{ width: `${cat.count > 0 ? (cat.done/cat.count)*100 : 0}%` }}
-                      transition={{ duration: 0.9, ease: [0.16,1,0.3,1] }}
+                      animate={{ width: `${cat.count > 0 ? (cat.done / cat.count) * 100 : 0}%` }}
+                      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
                     />
                   </div>
                 </div>

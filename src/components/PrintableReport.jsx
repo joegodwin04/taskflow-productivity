@@ -1,11 +1,9 @@
 // SafePdfReport.jsx — Presentation-Ready, 100% Stable PDF Export Template
 // Strictly styled with solid backgrounds and clean boundaries to prevent html2canvas addColorStop gradient parser crashes.
-import React from 'react'
 
 export default function SafePdfReport({
   user,
   todos = [],
-  stats = {},
   pomoSessions = 0,
   liveGoals = [],
   liveHabits = [],
@@ -15,7 +13,7 @@ export default function SafePdfReport({
   activeCount = 0
 }) {
   const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-  
+
   // Date Formatter helper
   const formatDate = (dateStr) => {
     if (!dateStr) return '—'
@@ -71,7 +69,7 @@ export default function SafePdfReport({
       margin: 0,
       boxSizing: 'border-box'
     }}>
-      
+
       {/* ============================================================
          PAGE 1: STRATEGIC EXECUTIVE COCKPIT & OVERVIEW
          ============================================================ */}
@@ -88,10 +86,10 @@ export default function SafePdfReport({
         justifyContent: 'space-between',
         position: 'relative'
       }}>
-        
+
         {/* Top Header Block */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '26px' }}>
-          
+
           {/* Branded cover style banner */}
           <div style={{
             background: '#0f0e2a', // Solid deep business navy
@@ -121,7 +119,7 @@ export default function SafePdfReport({
               <h1 style={{ fontSize: '24px', fontWeight: '800', margin: '10px 0 4px 0', letterSpacing: '-0.5px', color: '#ffffff' }}>PRODUCTIVITY REPORT</h1>
               <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Executive Performance Portfolio</p>
             </div>
-            
+
             <div style={{
               background: '#1e1b4b', // Recessed solid purple card
               border: '1px solid #312e81',
@@ -141,7 +139,7 @@ export default function SafePdfReport({
 
           {/* Row 1: Productivity score circle & key stats cards */}
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
-            
+
             {/* SVG Circular Progress Score */}
             <div style={{
               background: '#ffffff',
@@ -173,15 +171,15 @@ export default function SafePdfReport({
                   <span style={{ fontSize: '8px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold' }}>Rate</span>
                 </div>
               </div>
-              
+
               <div>
                 <h3 style={{ fontSize: '13px', fontWeight: '800', margin: '0 0 6px 0', color: '#0f0e2a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Task Completion Rate</h3>
                 <p style={{ fontSize: '11px', color: '#475569', margin: 0, lineHeight: '1.5' }}>
-                  {completionRate >= 80 
+                  {completionRate >= 80
                     ? "Exceptional performance! Your high throughput rates place your active workspace in the top 5% of productive SaaS professionals globally."
                     : completionRate >= 50
-                    ? "Good steady execution. Consistency tracking reveals high baseline workload velocity. Keep processing backlogs!"
-                    : "Workload bottleneck detected. We recommend breaking objectives down into small checkable Pomodoro focus sprints."}
+                      ? "Good steady execution. Consistency tracking reveals high baseline workload velocity. Keep processing backlogs!"
+                      : "Workload bottleneck detected. We recommend breaking objectives down into small checkable Pomodoro focus sprints."}
                 </p>
               </div>
             </div>
@@ -199,7 +197,7 @@ export default function SafePdfReport({
                 <div style={{ fontSize: '26px', fontWeight: '800', color: '#10b981', margin: '4px 0' }}>{completedCount}</div>
                 <div style={{ fontSize: '8px', color: '#94a3b8' }}>Tasks executed</div>
               </div>
-              
+
               <div style={{
                 background: '#ffffff',
                 border: '1px solid #e2e8f0',
@@ -217,7 +215,7 @@ export default function SafePdfReport({
 
           {/* Row 2: Focus Analytics & Weekly activity bar charts */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px' }}>
-            
+
             {/* Deep Work Focus Counter */}
             <div style={{
               background: '#ffffff',
@@ -241,7 +239,7 @@ export default function SafePdfReport({
               }}>
                 ⏱️ Deep Work Sprints
               </h3>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '11px', color: '#475569' }}>Completed Sessions</span>
@@ -286,7 +284,7 @@ export default function SafePdfReport({
                 </h3>
                 <p style={{ fontSize: '10px', color: '#64748b', margin: 0 }}>Workload volume processed across the current business cycle</p>
               </div>
-              
+
               {/* Stable Solid Rectangles Chart (Zero Grad) */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '60px', margin: '12px 10px 0 10px' }}>
                 {[35, 60, 45, 80, 55, 90, 70].map((val, idx) => {
@@ -328,7 +326,7 @@ export default function SafePdfReport({
             }}>
               🎯 Active Strategic Objectives & Goals
             </h3>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {liveGoals.length > 0 ? (
                 liveGoals.slice(0, 3).map((goal) => {
@@ -378,7 +376,7 @@ export default function SafePdfReport({
             }}>
               🔥 Daily Habit Trackers & Consistency
             </h3>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {liveHabits.length > 0 ? (
                 liveHabits.slice(0, 3).map((habit) => {
@@ -398,7 +396,7 @@ export default function SafePdfReport({
                           borderRadius: '4px'
                         }}>🔥 {streak}d streak</span>
                       </div>
-                      
+
                       {/* Mon-Sun trackers with solid background colors */}
                       <div style={{ display: 'flex', gap: '6px' }}>
                         {last7.map((day, dIdx) => (
@@ -464,9 +462,9 @@ export default function SafePdfReport({
         justifyContent: 'space-between',
         position: 'relative'
       }}>
-        
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-          
+
           {/* Header stripe with corporate name */}
           <div style={{
             display: 'flex',
@@ -488,7 +486,7 @@ export default function SafePdfReport({
             <h3 style={{ fontSize: '12px', fontWeight: '800', margin: '0 0 10px 0', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#0f0e2a', textAlign: 'left' }}>
               📊 Workload Execution Ledger
             </h3>
-            
+
             <table style={{
               width: '100%',
               borderCollapse: 'collapse',
@@ -511,7 +509,7 @@ export default function SafePdfReport({
                     const isEven = idx % 2 === 0
                     const due = formatDate(todo.dueDate)
                     const comp = formatDate(todo.completedAt)
-                    
+
                     // Priority Solid badging
                     const priorityPills = {
                       high: { bg: '#fee2e2', text: '#ef4444' },
@@ -571,7 +569,7 @@ export default function SafePdfReport({
                 )}
               </tbody>
             </table>
-            
+
             {todos.length > 12 && (
               <div style={{
                 fontSize: '9px',
@@ -609,7 +607,7 @@ export default function SafePdfReport({
             }}>
               🧠 Executive Analytics & Workspace Insights
             </h3>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '11px', lineHeight: '1.6', color: '#334155' }}>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
                 <span style={{ fontSize: '14px', background: '#d1fae5', padding: '3px 6px', borderRadius: '6px' }}>💡</span>

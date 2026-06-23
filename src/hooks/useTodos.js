@@ -1,7 +1,6 @@
-// useTodos.js — Custom hook for all todo state management
-import { useState, useEffect, useCallback, useMemo } from 'react'
-
-const generateId = () => `todo_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+// useTodos.js — Custom hook for all todo state management with API
+import { useState, useCallback, useMemo, useEffect } from 'react'
+import { fetchAPI } from '../utils/api'
 
 export const PRIORITIES = {
   high:   { label: 'High',   color: '#f43f5e', bg: 'rgba(244,63,94,0.1)',   icon: '🔴' },
@@ -20,109 +19,125 @@ export const CATEGORIES = [
 ]
 
 export function useTodos(user) {
-  const getStorageKey = useCallback(() => {
-    const userId = user?.id || 'guest'
-    return `taskflow_${userId}_tasks`
-  }, [user?.id])
+  const [todos, setTodos] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const loadFromStorage = useCallback(() => {
-    try {
-      const raw = localStorage.getItem(getStorageKey())
-      return raw ? JSON.parse(raw) : []
-    } catch {
-      return []
-    }
-  }, [getStorageKey])
-
-  const saveToStorage = useCallback((todosList) => {
-    try {
-      localStorage.setItem(getStorageKey(), JSON.stringify(todosList))
-    } catch (e) {
-      console.warn('Failed to save todos', e)
-    }
-  }, [getStorageKey])
-
-  const [todos, setTodos] = useState(() => loadFromStorage())
   const [filter, setFilter] = useState('all')       // all | active | completed
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('createdAt') // createdAt | dueDate | priority | alpha
 
-  // Reload todos reactively when user session changes
-  useEffect(() => {
-    setTodos(loadFromStorage())
-  }, [user?.id, loadFromStorage])
-
-  const persist = useCallback((newTodos) => {
-    setTodos(newTodos)
-    saveToStorage(newTodos)
-  }, [saveToStorage])
-
-  const addTodo = useCallback((data) => {
-    const newTodo = {
-      id: generateId(),
-      text: data.text.trim(),
-      completed: false,
-      priority: data.priority || 'medium',
-      category: data.category || 'other',
-      dueDate: data.dueDate || null,
-      notes: data.notes || '',
-      createdAt: new Date().toISOString(),
-      completedAt: null,
+  const fetchTodos = useCallback(async () => {
+    if (!user) {
+      setTodos([])
+      setLoading(false)
+      return
     }
-    setTodos(prev => {
-      const next = [newTodo, ...prev]
-      saveToStorage(next)
-      return next
-    })
-  }, [saveToStorage])
+    try {
+      setLoading(true)
+      const data = await fetchAPI('/tasks')
+      setTodos(data)
+    } catch (e) {
+      console.error('Failed to fetch todos:', e)
+    } finally {
+      setLoading(false)
+    }
+  }, [user])
 
-  const toggleTodo = useCallback((id) => {
-    setTodos(prev => {
-      const next = prev.map(t =>
-        t.id === id
-          ? { ...t, completed: !t.completed, completedAt: !t.completed ? new Date().toISOString() : null }
-          : t
-      )
-      saveToStorage(next)
-      return next
-    })
-  }, [saveToStorage])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchTodos()
+  }, [fetchTodos])
 
-  const deleteTodo = useCallback((id) => {
-    setTodos(prev => {
-      const next = prev.filter(t => t.id !== id)
-      saveToStorage(next)
-      return next
-    })
-  }, [saveToStorage])
+  const addTodo = useCallback(async (data) => {
+    try {
+      const newTodo = await fetchAPI('/tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          text: data.text.trim(),
+          priority: data.priority || 'medium',
+          category: data.category || 'other',
+          dueDate: data.dueDate || null,
+          notes: data.notes || '',
+        })
+      })
+      setTodos(prev => [newTodo, ...prev])
+    } catch (e) {
+      console.error('Failed to add todo:', e)
+    }
+  }, [])
 
-  const updateTodo = useCallback((id, updates) => {
-    setTodos(prev => {
-      const next = prev.map(t => t.id === id ? { ...t, ...updates } : t)
-      saveToStorage(next)
-      return next
-    })
-  }, [saveToStorage])
+  const toggleTodo = useCallback(async (id) => {
+    let previousTodos = todos
+    let targetCompleted = false
+    setTodos(prev => prev.map(t => {
+      if (t.id === id) {
+        targetCompleted = !t.completed
+        return { ...t, completed: targetCompleted, completedAt: targetCompleted ? new Date().toISOString() : null }
+      }
+      return t
+    }))
+    try {
+      await fetchAPI(`/tasks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ completed: targetCompleted })
+      })
+    } catch (e) {
+      console.error('Failed to toggle todo:', e)
+      setTodos(previousTodos) // revert
+    }
+  }, [todos])
 
-  const clearCompleted = useCallback(() => {
-    setTodos(prev => {
-      const next = prev.filter(t => !t.completed)
-      saveToStorage(next)
-      return next
-    })
-  }, [saveToStorage])
+  const deleteTodo = useCallback(async (id) => {
+    const previousTodos = todos
+    setTodos(prev => prev.filter(t => t.id !== id))
+    try {
+      await fetchAPI(`/tasks/${id}`, { method: 'DELETE' })
+    } catch (e) {
+      console.error('Failed to delete todo:', e)
+      setTodos(previousTodos) // revert
+    }
+  }, [todos])
+
+  const updateTodo = useCallback(async (id, updates) => {
+    const previousTodos = todos
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t))
+    try {
+      await fetchAPI(`/tasks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      })
+    } catch (e) {
+      console.error('Failed to update todo:', e)
+      setTodos(previousTodos) // revert
+    }
+  }, [todos])
+
+  const clearCompleted = useCallback(async () => {
+    const previousTodos = todos
+    setTodos(prev => prev.filter(t => !t.completed))
+    try {
+      // API requires a new endpoint or doing it one by one, wait, is there a clear-completed route?
+      // Let's check: tasks.js doesn't have clear-completed out of the box in the previous version,
+      // but I can delete them locally. Wait, the API routes I wrote did not have clear-completed.
+      // So I will iterate and delete.
+      const completedIds = todos.filter(t => t.completed).map(t => t.id)
+      await Promise.all(completedIds.map(id => fetchAPI(`/tasks/${id}`, { method: 'DELETE' })))
+    } catch (e) {
+      console.error('Failed to clear completed:', e)
+      setTodos(previousTodos) // revert
+    }
+  }, [todos])
 
   const reorderTodo = useCallback((fromIndex, toIndex) => {
     setTodos(prev => {
       const next = [...prev]
       const [moved] = next.splice(fromIndex, 1)
       next.splice(toIndex, 0, moved)
-      saveToStorage(next)
       return next
     })
-  }, [saveToStorage])
+  }, [])
 
   const filteredTodos = useMemo(() => {
     let result = [...todos]
@@ -132,7 +147,7 @@ export function useTodos(user) {
       const q = searchQuery.toLowerCase()
       result = result.filter(t =>
         t.text.toLowerCase().includes(q) ||
-        t.notes.toLowerCase().includes(q)
+        (t.notes && t.notes.toLowerCase().includes(q))
       )
     }
 
@@ -176,6 +191,7 @@ export function useTodos(user) {
 
   return {
     todos,
+    loading,
     filteredTodos,
     stats,
     filter, setFilter,

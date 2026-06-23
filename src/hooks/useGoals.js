@@ -1,93 +1,108 @@
-// useGoals.js — Goal tracking with progress and localStorage
-import { useState, useEffect, useCallback } from 'react'
-
-const DEFAULT_GOALS = [
-  { id: 'g_default_1', title: 'Complete 50 tasks', icon: '🎯', color: '#7c6af7', target: 50, current: 0, unit: 'tasks', dueDate: '', createdAt: new Date().toISOString() },
-  { id: 'g_default_2', title: 'Build 30-day streak', icon: '🔥', color: '#f59e0b', target: 30, current: 0, unit: 'days', dueDate: '', createdAt: new Date().toISOString() },
-  { id: 'g_default_3', title: 'Focus sessions this month', icon: '⏱️', color: '#10b981', target: 20, current: 0, unit: 'sessions', dueDate: '', createdAt: new Date().toISOString() },
-]
+// useGoals.js — Goal tracking with progress via API
+import { useState, useCallback, useEffect } from 'react'
+import { fetchAPI } from '../utils/api'
 
 export function useGoals(user) {
-  const getStorageKey = useCallback(() => {
-    const userId = user?.id || 'guest'
-    return `taskflow_${userId}_goals`
-  }, [user?.id])
+  const [goals, setGoals] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const load = useCallback(() => {
-    try {
-      const raw = localStorage.getItem(getStorageKey())
-      return raw ? JSON.parse(raw) : DEFAULT_GOALS
-    } catch { return DEFAULT_GOALS }
-  }, [getStorageKey])
-
-  const save = useCallback((goalsList) => {
-    try {
-      localStorage.setItem(getStorageKey(), JSON.stringify(goalsList))
-    } catch (e) {
-      console.warn('Failed to save goals', e)
+  const fetchGoals = useCallback(async () => {
+    if (!user) {
+      setGoals([])
+      setLoading(false)
+      return
     }
-  }, [getStorageKey])
+    try {
+      setLoading(true)
+      const data = await fetchAPI('/goals')
+      setGoals(data)
+    } catch (e) {
+      console.error('Failed to fetch goals:', e)
+    } finally {
+      setLoading(false)
+    }
+  }, [user])
 
-  const [goals, setGoals] = useState(() => load())
-
-  // Reload goals reactively when user session changes
   useEffect(() => {
-    setGoals(load())
-  }, [user?.id, load])
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchGoals()
+  }, [fetchGoals])
 
-  const persist = useCallback((next) => {
-    setGoals(next)
-    save(next)
-  }, [save])
+  const addGoal = useCallback(async (data) => {
+    try {
+      const newGoal = await fetchAPI('/goals', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: data.title.trim(),
+          icon: data.icon || '🎯',
+          color: data.color || '#7c6af7',
+          target: Number(data.target) || 10,
+          current: 0,
+          unit: data.unit || '',
+          dueDate: data.dueDate || '',
+        })
+      })
+      setGoals(prev => [...prev, newGoal])
+    } catch (e) {
+      console.error('Failed to add goal:', e)
+    }
+  }, [])
 
-  const addGoal = useCallback((data) => {
-    setGoals(prev => {
-      const next = [...prev, {
-        id: `g_${Date.now()}`,
-        title: data.title.trim(),
-        icon: data.icon || '🎯',
-        color: data.color || '#7c6af7',
-        target: Number(data.target) || 10,
-        current: 0,
-        unit: data.unit || '',
-        dueDate: data.dueDate || '',
-        createdAt: new Date().toISOString(),
-      }]
-      save(next)
-      return next
-    })
-  }, [save])
+  const increment = useCallback(async (id, by = 1) => {
+    let previousGoals = goals
+    let targetCurrent = 0
+    setGoals(prev => prev.map(g => {
+      if (g.id === id) {
+        targetCurrent = Math.min(g.current + by, g.target)
+        return { ...g, current: targetCurrent }
+      }
+      return g
+    }))
+    try {
+      await fetchAPI(`/goals/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ current: targetCurrent })
+      })
+    } catch (e) {
+      console.error('Failed to update goal:', e)
+      setGoals(previousGoals) // revert
+    }
+  }, [goals])
 
-  const increment = useCallback((id, by = 1) => {
-    setGoals(prev => {
-      const next = prev.map(g =>
-        g.id === id ? { ...g, current: Math.min(g.current + by, g.target) } : g
-      )
-      save(next)
-      return next
-    })
-  }, [save])
+  const decrement = useCallback(async (id) => {
+    let previousGoals = goals
+    let targetCurrent = 0
+    setGoals(prev => prev.map(g => {
+      if (g.id === id) {
+        targetCurrent = Math.max(g.current - 1, 0)
+        return { ...g, current: targetCurrent }
+      }
+      return g
+    }))
+    try {
+      await fetchAPI(`/goals/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ current: targetCurrent })
+      })
+    } catch (e) {
+      console.error('Failed to update goal:', e)
+      setGoals(previousGoals) // revert
+    }
+  }, [goals])
 
-  const decrement = useCallback((id) => {
-    setGoals(prev => {
-      const next = prev.map(g =>
-        g.id === id ? { ...g, current: Math.max(g.current - 1, 0) } : g
-      )
-      save(next)
-      return next
-    })
-  }, [save])
-
-  const deleteGoal = useCallback((id) => {
-    setGoals(prev => {
-      const next = prev.filter(g => g.id !== id)
-      save(next)
-      return next
-    })
-  }, [save])
+  const deleteGoal = useCallback(async (id) => {
+    const previousGoals = goals
+    setGoals(prev => prev.filter(g => g.id !== id))
+    try {
+      await fetchAPI(`/goals/${id}`, { method: 'DELETE' })
+    } catch (e) {
+      console.error('Failed to delete goal:', e)
+      setGoals(previousGoals) // revert
+    }
+  }, [goals])
 
   const getProgress = (goal) => goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0
 
-  return { goals, addGoal, increment, decrement, deleteGoal, getProgress }
+  return { goals, loading, addGoal, increment, decrement, deleteGoal, getProgress }
 }
 

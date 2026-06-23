@@ -1,5 +1,5 @@
 // App.jsx — TaskFlow Premium Productivity Platform
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Sidebar from './components/Sidebar'
 import Dashboard from './components/Dashboard'
@@ -30,7 +30,7 @@ export default function App() {
   const [view, setView]           = useState('dashboard')
   const [collapsed, setCollapsed] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
-  const { theme, toggle: toggleTheme } = useTheme()
+  const { theme, toggle: toggleTheme, setUserId } = useTheme()
   const [profileOpen, setProfileOpen] = useState(false)
   const [activeSettingsTab, setActiveSettingsTab] = useState(null)
   const [toast, setToast] = useState(null)
@@ -40,13 +40,32 @@ export default function App() {
     setTimeout(() => setToast(null), 3000)
   }, [])
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('tf_user')
-    return saved ? JSON.parse(saved) : null
+    try {
+      const saved = localStorage.getItem('tf_user')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        // Strip password from session for security (migration from older versions)
+        const { password, ...safeUser } = parsed
+        if (password !== undefined) {
+          localStorage.setItem('tf_user', JSON.stringify(safeUser))
+        }
+        return safeUser
+      }
+    } catch { /* ignore malformed localStorage data */ }
+    return null
   })
 
+  // Sync theme context with current user identity
+  useEffect(() => {
+    setUserId(user?.id || null)
+  }, [user?.id, setUserId])
+
   const handleLoginSuccess = (userData) => {
-    setUser(userData)
-    localStorage.setItem('tf_user', JSON.stringify(userData))
+    // Remove password field before storing in React state / localStorage
+    const safeUser = { ...userData }
+    delete safeUser.password
+    setUser(safeUser)
+    localStorage.setItem('tf_user', JSON.stringify(safeUser))
   }
 
   const handleLogout = () => {
@@ -58,12 +77,23 @@ export default function App() {
         `taskflow_${user.id}_goals`,
         `taskflow_${user.id}_analytics`,
         `taskflow_${user.id}_settings`,
-        `taskflow_${user.id}_reports`
+        `taskflow_${user.id}_reports`,
+        `taskflow_${user.id}_theme`
       ]
       keysToClear.forEach(k => localStorage.removeItem(k))
     }
+    // Reset all in-memory UI state so no stale data bleeds into the next session
+    setView('dashboard')
+    setSearchQuery('')
+    setFilter('all')
+    setCategoryFilter('all')
+    setPriorityFilter('all')
+    setNotifOpen(false)
+    setProfileOpen(false)
+    setActiveSettingsTab(null)
     setUser(null)
     localStorage.removeItem('tf_user')
+    localStorage.removeItem('tf_token')
   }
 
   const {
@@ -75,6 +105,12 @@ export default function App() {
     sortBy, setSortBy,
     addTodo, toggleTodo, deleteTodo, updateTodo, clearCompleted,
   } = useTodos(user)
+
+  // Compute pomoSessions from stable user identity — depends on [user] for React Compiler compatibility
+  const pomoSessions = useMemo(() => {
+    if (!user?.id) return 0
+    return parseInt(localStorage.getItem(`taskflow_${user.id}_analytics`) || '0', 10)
+  }, [user])
 
   const handleSetView = (v) => {
     setView(v)
@@ -102,7 +138,7 @@ export default function App() {
   }
 
   return (
-    <div key={user?.email || 'guest'} className={styles.shell} data-theme={theme}>
+    <div key={user?.id || 'no-user'} className={styles.shell} data-theme={theme}>
       {/* Ambient orbs */}
       <div className={styles.orb1} />
       <div className={styles.orb2} />
@@ -316,7 +352,7 @@ export default function App() {
           <AnimatePresence mode="wait">
             {view === 'dashboard' && (
               <motion.div key="dashboard" {...pageVariants}>
-                <Dashboard stats={stats} todos={todos} onNavigate={handleSetView} />
+                <Dashboard stats={stats} todos={todos} onNavigate={handleSetView} user={user} />
               </motion.div>
             )}
 
@@ -441,7 +477,7 @@ export default function App() {
               setUser={setUser}
               stats={stats}
               todos={todos}
-              pomoSessions={parseInt(localStorage.getItem(`taskflow_${user?.id || 'guest'}_analytics`) || '0', 10)}
+              pomoSessions={pomoSessions}
               showToast={showToast}
             />
           )}

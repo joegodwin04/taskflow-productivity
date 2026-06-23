@@ -141,3 +141,15 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Environment Variables
+.env
+
+# SQLite Database
+database.sqlite
+
+# Build Files
+dist/
+
+# Node Modules
+node_modules/

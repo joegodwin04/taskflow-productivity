@@ -5,6 +5,7 @@ import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
 import styles from './SettingsModal.module.css'
 import PrintableReport from './PrintableReport'
+import { hashPassword } from '../utils/hashPassword'
 
 export default function SettingsModal({
   activeTab,
@@ -86,18 +87,6 @@ export default function SettingsModal({
     ? liveHabits.reduce((max, h) => Math.max(max, getStreakHelper(h)), 0)
     : 7
 
-  const getGoalProgress = (goal) => {
-    return goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0
-  }
-
-  const getHabitLast7Days = (habit) => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const ago = 6 - i
-      const d = dateStrHelper(ago)
-      const label = new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'narrow' })
-      return { date: d, label, done: !!(habit.completions && habit.completions[d]) }
-    })
-  }
 
   // Live streak alias for profile and stats tabs
   const streakDays = longestStreak
@@ -109,15 +98,26 @@ export default function SettingsModal({
     } catch { return [] }
   }
 
-  // Save updated user to registry
-  const updateRegistryUser = (updatedUser) => {
+  // Deterministic email hashing (mirrors Auth.jsx) for userId generation
+  function getEmailHash(email) {
+    let hash = 0
+    const cleanEmail = email.toLowerCase().trim()
+    for (let i = 0; i < cleanEmail.length; i++) {
+      hash = (hash << 5) - hash + cleanEmail.charCodeAt(i)
+      hash |= 0
+    }
+    return Math.abs(hash).toString(36)
+  }
+
+  // Save updated user fields to registry (merge preserves existing fields like password)
+  const updateRegistryUser = (updates) => {
     try {
       const registry = getUsersRegistry()
       const index = registry.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase())
       if (index !== -1) {
-        registry[index] = updatedUser
+        registry[index] = { ...registry[index], ...updates }
       } else {
-        registry.push(updatedUser)
+        registry.push(updates)
       }
       localStorage.setItem('tf_users_registry', JSON.stringify(registry))
     } catch (e) {
@@ -125,7 +125,7 @@ export default function SettingsModal({
     }
   }
 
-  // Save profile edit changes
+  // Save profile edit changes (handles email-change data migration)
   const handleSaveProfile = (e) => {
     e.preventDefault()
     if (!editName.trim() || !editEmail.trim()) {
@@ -134,20 +134,54 @@ export default function SettingsModal({
     }
 
     setIsSaving(true)
-    setTimeout(() => {
-      const updatedUser = {
-        ...user,
+    setTimeout(async () => {
+      // Detect email change and compute new userId if needed
+      const oldUserId = user.id
+      const emailChanged = editEmail.toLowerCase().trim() !== user.email.toLowerCase().trim()
+      let newUserId = oldUserId
+
+      if (emailChanged && oldUserId.startsWith('email_')) {
+        newUserId = `email_${getEmailHash(editEmail)}`
+
+        // Migrate all user-scoped localStorage keys to the new userId
+        const suffixes = ['_tasks', '_habits', '_goals', '_analytics', '_settings', '_reports', '_theme']
+        suffixes.forEach(suffix => {
+          const oldKey = `taskflow_${oldUserId}${suffix}`
+          const newKey = `taskflow_${newUserId}${suffix}`
+          const data = localStorage.getItem(oldKey)
+          if (data !== null) {
+            localStorage.setItem(newKey, data)
+            localStorage.removeItem(oldKey)
+          }
+        })
+      }
+
+      // Build registry update with only the changed fields
+      const registryUpdate = {
+        id: newUserId,
         name: editName,
         email: editEmail,
         bio: editBio,
         avatar: editName.substring(0, 2).toUpperCase(),
-        password: editPassword !== '••••••••' ? editPassword : user.password
       }
-      
-      // Save changes back to registry and active session
-      updateRegistryUser(updatedUser)
-      setUser(updatedUser)
-      localStorage.setItem('tf_user', JSON.stringify(updatedUser))
+      // Only update password in registry if user actually typed a new one (hash it)
+      if (editPassword !== '••••••••') {
+        registryUpdate.password = await hashPassword(editPassword)
+      }
+      updateRegistryUser(registryUpdate)
+
+      // Session user — never includes password
+      const updatedSessionUser = {
+        ...user,
+        id: newUserId,
+        name: editName,
+        email: editEmail,
+        bio: editBio,
+        avatar: editName.substring(0, 2).toUpperCase(),
+      }
+      setUser(updatedSessionUser)
+      localStorage.setItem('tf_user', JSON.stringify(updatedSessionUser))
+
       setIsSaving(false)
       showToast('Profile credentials updated successfully!', 'success')
     }, 800)

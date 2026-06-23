@@ -1,78 +1,201 @@
-/* AnalyticsChart.module.css — Professional Light + Dark v5 */
+/* AnalyticsChart.module.css — Pure CSS flex bar chart, perfectly aligned */
 
 .wrap {
-  background: var(--bg-glass); border: 1px solid var(--border-subtle);
-  border-radius: var(--r-lg); padding: clamp(16px, 2.5vw, 22px);
-  backdrop-filter: blur(18px); display: flex; flex-direction: column; gap: 16px;
-  position: relative; overflow: hidden; box-shadow: var(--shadow-xs);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  padding: clamp(16px, 2.5vw, 22px);
+  backdrop-filter: blur(18px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
 }
 .wrap::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
 }
 
 .header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.title { font-size: 13.5px; font-weight: 700; color: var(--text-200); letter-spacing: -0.01em; }
+.title  { font-size: 13.5px; font-weight: 700; color: var(--text-200); letter-spacing: -0.01em; }
 .sub {
-  font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: var(--r-full);
+  font-size: 10px; font-weight: 700;
+  padding: 3px 10px; border-radius: var(--r-full);
   background: var(--violet-dim); border: 1px solid rgba(124,106,247,0.18);
   color: var(--violet-light); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
 }
 
-.legend { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.legendItem { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-300); font-weight: 500; }
-.legendDot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+.legend        { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.legendItem    { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-300); font-weight: 500; }
+.legendDot     { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
 
-.chartArea { display: flex; flex-direction: column; gap: 5px; }
-.svg { width: 100%; height: 130px; overflow: visible; }
-.xLabels { display: flex; justify-content: space-around; }
-.xLabel { font-size: 9.5px; color: var(--text-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+/* ═══════════════════════════════════════
+   FLEX BAR CHART — alignment is structural
+   ═══════════════════════════════════════ */
 
-/* Category cards */
+/* Outer wrapper — establishes a positioned container for the grid lines */
+.chartOuter {
+  position: relative;
+  width: 100%;
+  /* Reserve space for the x-axis labels below the chart area */
+  padding-bottom: 24px;
+}
+
+/* Decorative grid lines — absolutely positioned behind the bars */
+.gridLines {
+  position: absolute;
+  inset: 0 0 24px 0; /* stop at the label area */
+  pointer-events: none;
+  z-index: 0;
+}
+.gridLine {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(50%);
+}
+
+/* Row of day columns — fills the full width, equal space per day */
+.barsRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;  /* bars grow upward from the bottom */
+  justify-content: stretch;
+  gap: 0;
+  width: 100%;
+  /* Chart area height */
+  height: 130px;
+}
+
+/* Each day column: takes equal width, stacks bars above label */
+.dayCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  /* Label sits at the very bottom, bars grow upward */
+  height: 100%;
+  gap: 6px;
+  /* Extend slightly below the barsRow for the label */
+  position: relative;
+}
+
+/* Area in which bars grow vertically — flex-end keeps them bottom-anchored */
+.barsArea {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;   /* bars grow UP from baseline */
+  justify-content: center;
+  gap: 2px;
+  min-height: 0;
+}
+
+/* Individual bar wrapper — provides a stable full-height column for the bar */
+.barWrap {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  max-width: 14px;
+  height: 100%;
+}
+
+/* The bar itself — height is animated via framer-motion */
+.bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  background: var(--bar-color);
+  transform-origin: bottom;
+  min-height: 3px;
+  /* Subtle gradient overlay */
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bar-color) 100%, white 15%),
+    color-mix(in srgb, var(--bar-color) 80%, transparent 20%)
+  );
+}
+
+/* X-axis label — always at the bottom of its day column */
+.xLabel {
+  font-size: 9.5px;
+  color: var(--text-400);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: center;
+  /* Pin label at the bottom of chartOuter */
+  position: absolute;
+  bottom: -24px;
+  left: 0;
+  right: 0;
+}
+
+/* ═══════════════════════════════
+   CATEGORY CARDS
+   ═══════════════════════════════ */
 .catGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 @media (min-width: 800px) { .catGrid { grid-template-columns: repeat(4, 1fr); } }
 
 .catCard {
-  padding: 12px 13px; background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border-subtle); border-radius: var(--r-md);
+  padding: 12px 13px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
   display: flex; flex-direction: column; gap: 4px;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.18s; cursor: default;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.18s;
+  cursor: default;
 }
 .catCard:hover { border-color: color-mix(in srgb, var(--cc, var(--violet)) 28%, transparent); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
-.catIcon { font-size: 17px; }
+.catIcon  { font-size: 17px; }
 .catCount { font-size: 19px; font-weight: 900; color: var(--text-100); line-height: 1; }
-.catName { font-size: 9.5px; color: var(--text-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-.catBar { height: 3px; background: rgba(255,255,255,0.07); border-radius: var(--r-full); overflow: hidden; margin-top: 2px; }
+.catName  { font-size: 9.5px; color: var(--text-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.catBar   { height: 3px; background: rgba(255,255,255,0.07); border-radius: var(--r-full); overflow: hidden; margin-top: 2px; }
 .catBarFill { height: 100%; background: var(--cc, var(--violet)); border-radius: var(--r-full); }
 
-/* Empty state */
+/* ═══════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════ */
 .emptyState {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   padding: 40px 24px; text-align: center; min-height: 200px;
 }
 .emptyEmoji { font-size: 44px; display: block; line-height: 1; margin-bottom: 3px; }
 .emptyTitle { font-size: 14px; font-weight: 800; color: var(--text-200); letter-spacing: -0.02em; }
-.emptyText { font-size: 12.5px; color: var(--text-400); line-height: 1.6; max-width: 200px; }
+.emptyText  { font-size: 12.5px; color: var(--text-400); line-height: 1.6; max-width: 200px; }
 
-/* Summary row */
-.summaryRow { display: flex; gap: 16px; flex-wrap: wrap; }
+/* ═══════════════════════════════
+   SUMMARY ROW
+   ═══════════════════════════════ */
+.summaryRow  { display: flex; gap: 16px; flex-wrap: wrap; }
 .summaryItem { display: flex; flex-direction: column; gap: 2px; }
-.summaryVal { font-size: 21px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-100); line-height: 1; }
-.summaryLbl { font-size: 9.5px; color: var(--text-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-.summaryDiv { width: 1px; height: 30px; background: var(--border-subtle); align-self: center; }
+.summaryVal  { font-size: 21px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-100); line-height: 1; }
+.summaryLbl  { font-size: 9.5px; color: var(--text-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.summaryDiv  { width: 1px; height: 30px; background: var(--border-subtle); align-self: center; }
 
-/* ═══ LIGHT MODE ═══ */
-[data-theme="light"] .wrap { background: var(--bg-elevated); border-color: var(--border-default); box-shadow: var(--shadow-sm); backdrop-filter: none; }
+/* ═══════════════════════════════
+   LIGHT MODE OVERRIDES
+   ═══════════════════════════════ */
+[data-theme="light"] .wrap        { background: var(--bg-elevated); border-color: var(--border-default); box-shadow: var(--shadow-sm); backdrop-filter: none; }
 [data-theme="light"] .wrap::before { display: none; }
-[data-theme="light"] .title { color: var(--text-100); }
-[data-theme="light"] .sub { background: rgba(124,106,247,0.07); border-color: var(--border-default); color: var(--violet); }
-[data-theme="light"] .legendItem { color: var(--text-300); }
-[data-theme="light"] .xLabel { color: var(--text-400); }
-[data-theme="light"] .catCard { background: var(--bg-form); border-color: var(--border-subtle); }
+[data-theme="light"] .title       { color: var(--text-100); }
+[data-theme="light"] .sub         { background: rgba(124,106,247,0.07); border-color: var(--border-default); color: var(--violet); }
+[data-theme="light"] .legendItem  { color: var(--text-300); }
+[data-theme="light"] .xLabel      { color: var(--text-400); }
+[data-theme="light"] .gridLine    { background: rgba(124, 106, 247, 0.07); }
+[data-theme="light"] .catCard     { background: var(--bg-form); border-color: var(--border-subtle); }
 [data-theme="light"] .catCard:hover { background: var(--bg-elevated); border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
-[data-theme="light"] .catBar { background: var(--border-default); }
-[data-theme="light"] .catCount { color: var(--text-100); }
-[data-theme="light"] .catName { color: var(--text-400); }
-[data-theme="light"] .summaryVal { color: var(--text-100); }
-[data-theme="light"] .summaryDiv { background: var(--border-default); }
-[data-theme="light"] .emptyTitle { color: var(--text-100); }
+[data-theme="light"] .catBar      { background: var(--border-default); }
+[data-theme="light"] .catCount    { color: var(--text-100); }
+[data-theme="light"] .catName     { color: var(--text-400); }
+[data-theme="light"] .summaryVal  { color: var(--text-100); }
+[data-theme="light"] .summaryDiv  { background: var(--border-default); }
+[data-theme="light"] .emptyTitle  { color: var(--text-100); }
