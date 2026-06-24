@@ -24,7 +24,22 @@ await sequelize.sync() // Creates tables if they don't exist
 const app = express()
 
 // Middleware
-app.use(cors())
+const allowedOrigins = [
+  'https://taskflow-productivity-ijr5.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+]
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. curl, Render health checks)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error(`CORS: origin ${origin} not allowed`))
+    }
+  },
+  credentials: true,
+}))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 

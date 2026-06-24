@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../context/ThemeContext'
 import styles from './Auth.module.css'
+import { API_BASE_URL } from '../utils/api'
 
 export default function Auth({ onLoginSuccess }) {
   const { theme } = useTheme()
@@ -29,7 +30,7 @@ export default function Auth({ onLoginSuccess }) {
     if (endpoint === 'signup') {
       console.log("Sending signup request", payload);
     }
-    const res = await fetch(`/api/auth/${endpoint}`, {
+    const res = await fetch(`${API_BASE_URL}/api/auth/${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
