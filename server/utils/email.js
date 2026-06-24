@@ -3,13 +3,19 @@ import nodemailer from 'nodemailer'
 // NOTE: dotenv is loaded by the main server entry (server/index.js) before this module is imported.
 // Do NOT call dotenv.config() here — it can override already-loaded env vars.
 
-const createTransporter = () => nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-})
+const createTransporter = () =>
+  nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  })
 
 // Lazy transporter — created on first use so env vars are guaranteed to be loaded
 let _transporter = null
