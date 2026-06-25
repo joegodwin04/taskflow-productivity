@@ -1,24 +1,25 @@
-export const API_BASE_URL = ''
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || '';
 
 export const fetchAPI = async (endpoint, options = {}) => {
-  const token = localStorage.getItem('tf_token')
+  const token = localStorage.getItem('tf_token');
 
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(options.headers || {})
-  }
+    ...(options.headers || {}),
+  };
 
   const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
     ...options,
-    headers
-  })
+    headers,
+  });
 
-  const data = await response.json()
+  const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'API request failed')
+    throw new Error(data.message || 'API request failed');
   }
 
-  return data
-}
+  return data;
+};
