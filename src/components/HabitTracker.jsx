@@ -117,7 +117,7 @@ export default function HabitTracker({ user }) {
         {habits.length === 0 ? (
           <motion.div className={styles.empty} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <span className={styles.emptyIcon}>🌱</span>
-            <p>No habits yet. Add one to start building your streaks!</p>
+            <p>No activity yet</p>
           </motion.div>
         ) : (
           habits.map((h, idx) => {

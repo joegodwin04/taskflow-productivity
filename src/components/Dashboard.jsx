@@ -1,6 +1,6 @@
 // Dashboard.jsx — Premium SaaS productivity dashboard
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
 import { CATEGORIES, PRIORITIES } from '../hooks/useTodos'
 import PomodoroTimer from './PomodoroTimer'
 import HabitTracker from './HabitTracker'
@@ -42,7 +42,7 @@ function useCountUp(target, ms = 1100) {
   return n
 }
 
-function StatCard({ label, value, icon, gradient, glow }) {
+const StatCard = memo(function StatCard({ label, value, icon, gradient, glow }) {
   const animated = useCountUp(value)
   return (
     <motion.div
@@ -61,9 +61,9 @@ function StatCard({ label, value, icon, gradient, glow }) {
       <div className={styles.statGlow} style={{ background: glow }} />
     </motion.div>
   )
-}
+})
 
-function ProductivityRing({ rate }) {
+const ProductivityRing = memo(function ProductivityRing({ rate }) {
   const r = 54, circ = 2 * Math.PI * r
   const [off, setOff] = useState(circ)
   useEffect(() => { const t = setTimeout(() => setOff(circ - (rate/100)*circ), 250); return () => clearTimeout(t) }, [rate, circ])
@@ -87,7 +87,7 @@ function ProductivityRing({ rate }) {
       </div>
     </div>
   )
-}
+})
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -98,7 +98,7 @@ function getGreeting() {
   return { text: 'Working late', emoji: '🌙' }
 }
 
-export default function Dashboard({ stats, todos, onNavigate, user }) {
+const Dashboard = memo(function Dashboard({ stats, todos, onNavigate, user, loading }) {
   const userName = user?.name ? user.name.split(' ')[0] : 'Builder'
   const greeting = getGreeting()
   const recentTodos = [...todos].sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5)
@@ -108,6 +108,15 @@ export default function Dashboard({ stats, todos, onNavigate, user }) {
     done:  todos.filter(t => t.category === c.id && t.completed).length,
   })).filter(c => c.count > 0)
   const maxCat = Math.max(...catStats.map(c => c.count), 1)
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'var(--text-400)' }}>
+        <div style={{ fontSize: 32, animation: 'pulse 1.5s infinite' }}>⬡</div>
+        <p style={{ marginTop: 16 }}>Loading your workspace...</p>
+      </div>
+    )
+  }
 
   return (
     <motion.div className={styles.dashboard} variants={container} initial="hidden" animate="show">
@@ -273,4 +282,6 @@ export default function Dashboard({ stats, todos, onNavigate, user }) {
       </div>
     </motion.div>
   )
-}
+})
+
+export default Dashboard

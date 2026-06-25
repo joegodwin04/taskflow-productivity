@@ -18,7 +18,7 @@ export const CATEGORIES = [
   { id: 'other',    label: 'Other',    icon: '✨', color: '#38bdf8' },
 ]
 
-export function useTodos(user) {
+export function useTodos(user, showToast) {
   const [todos, setTodos] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -63,10 +63,12 @@ export function useTodos(user) {
         })
       })
       setTodos(prev => [newTodo, ...prev])
+      if (showToast) showToast('Task added successfully', 'success')
     } catch (e) {
       console.error('Failed to add todo:', e)
+      if (showToast) showToast('Failed to add task', 'error')
     }
-  }, [])
+  }, [showToast])
 
   const toggleTodo = useCallback(async (id) => {
     let previousTodos = todos
@@ -86,19 +88,22 @@ export function useTodos(user) {
     } catch (e) {
       console.error('Failed to toggle todo:', e)
       setTodos(previousTodos) // revert
+      if (showToast) showToast('Failed to sync task toggle', 'error')
     }
-  }, [todos])
+  }, [todos, showToast])
 
   const deleteTodo = useCallback(async (id) => {
     const previousTodos = todos
     setTodos(prev => prev.filter(t => t.id !== id))
     try {
       await fetchAPI(`/tasks/${id}`, { method: 'DELETE' })
+      if (showToast) showToast('Task deleted', 'success')
     } catch (e) {
       console.error('Failed to delete todo:', e)
       setTodos(previousTodos) // revert
+      if (showToast) showToast('Failed to delete task', 'error')
     }
-  }, [todos])
+  }, [todos, showToast])
 
   const updateTodo = useCallback(async (id, updates) => {
     const previousTodos = todos
@@ -108,27 +113,26 @@ export function useTodos(user) {
         method: 'PUT',
         body: JSON.stringify(updates)
       })
+      if (showToast) showToast('Task updated', 'success')
     } catch (e) {
       console.error('Failed to update todo:', e)
       setTodos(previousTodos) // revert
+      if (showToast) showToast('Failed to update task', 'error')
     }
-  }, [todos])
+  }, [todos, showToast])
 
   const clearCompleted = useCallback(async () => {
     const previousTodos = todos
     setTodos(prev => prev.filter(t => !t.completed))
     try {
-      // API requires a new endpoint or doing it one by one, wait, is there a clear-completed route?
-      // Let's check: tasks.js doesn't have clear-completed out of the box in the previous version,
-      // but I can delete them locally. Wait, the API routes I wrote did not have clear-completed.
-      // So I will iterate and delete.
-      const completedIds = todos.filter(t => t.completed).map(t => t.id)
-      await Promise.all(completedIds.map(id => fetchAPI(`/tasks/${id}`, { method: 'DELETE' })))
+      await fetchAPI('/tasks/completed', { method: 'DELETE' })
+      if (showToast) showToast('Completed tasks cleared', 'success')
     } catch (e) {
       console.error('Failed to clear completed:', e)
       setTodos(previousTodos) // revert
+      if (showToast) showToast('Failed to clear completed tasks', 'error')
     }
-  }, [todos])
+  }, [todos, showToast])
 
   const reorderTodo = useCallback((fromIndex, toIndex) => {
     setTodos(prev => {

@@ -97,14 +97,14 @@ export default function App() {
   }
 
   const {
-    todos, filteredTodos, stats,
+    todos, filteredTodos, stats, loading: todosLoading,
     filter, setFilter,
     categoryFilter, setCategoryFilter,
     priorityFilter, setPriorityFilter,
     searchQuery, setSearchQuery,
     sortBy, setSortBy,
     addTodo, toggleTodo, deleteTodo, updateTodo, clearCompleted,
-  } = useTodos(user)
+  } = useTodos(user, showToast)
 
   // Compute pomoSessions from stable user identity — depends on [user] for React Compiler compatibility
   const pomoSessions = useMemo(() => {
@@ -352,7 +352,7 @@ export default function App() {
           <AnimatePresence mode="wait">
             {view === 'dashboard' && (
               <motion.div key="dashboard" {...pageVariants}>
-                <Dashboard stats={stats} todos={todos} onNavigate={handleSetView} user={user} />
+                <Dashboard stats={stats} todos={todos} onNavigate={handleSetView} user={user} loading={todosLoading} />
               </motion.div>
             )}
 
@@ -372,7 +372,7 @@ export default function App() {
                   />
                 </section>
                 <section className={styles.section}>
-                  <TodoList todos={filteredTodos} filter={filter}
+                  <TodoList todos={filteredTodos} filter={filter} loading={todosLoading}
                     onToggle={toggleTodo} onDelete={deleteTodo} onUpdate={updateTodo} />
                 </section>
               </motion.div>
@@ -382,7 +382,7 @@ export default function App() {
               <motion.div key="habits" className={styles.singleView} {...pageVariants}>
                 <h2 className={styles.pageTitle}>🔥 Habit Tracker</h2>
                 <p className={styles.pageSub}>Build consistent habits and track your streaks every day.</p>
-                <HabitTracker user={user} />
+                <HabitTracker user={user} showToast={showToast} />
               </motion.div>
             )}
 
@@ -390,7 +390,7 @@ export default function App() {
               <motion.div key="goals" className={styles.singleView} {...pageVariants}>
                 <h2 className={styles.pageTitle}>🎯 Goals</h2>
                 <p className={styles.pageSub}>Set meaningful goals and track your progress toward them.</p>
-                <GoalTracker user={user} />
+                <GoalTracker user={user} showToast={showToast} />
               </motion.div>
             )}
 
@@ -399,7 +399,7 @@ export default function App() {
                 <h2 className={styles.pageTitle}>⏱ Focus Timer</h2>
                 <p className={styles.pageSub}>Use the Pomodoro technique to stay in the zone.</p>
                 <div className={styles.focusLayout}>
-                  <PomodoroTimer user={user} />
+                  <PomodoroTimer user={user} showToast={showToast} />
                   <div className={styles.focusTips}>
                     <div className={styles.tipCard}>
                       <span className={styles.tipIcon}>🎯</span>

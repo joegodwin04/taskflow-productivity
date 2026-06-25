@@ -79,10 +79,10 @@ const seedWorkspaceForUser = async (userId, isDemo = false) => {
 // POST /api/auth/signup
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password } = req.body
-    console.log(`\n[SIGNUP] REQUEST RECEIVED — email: ${email}`)
+    const { name, email, password, securityQuestion, securityAnswer } = req.body
+    console.log(`\nREQUEST RECEIVED`)
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !securityQuestion || !securityAnswer) {
       return res.status(400).json({ message: 'Please fill in all required fields.' })
     }
 
@@ -100,121 +100,40 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ message: 'An account with this email already exists.' })
     }
 
-    console.log(`[SIGNUP] EMAIL NOT FOUND — creating new user`)
+    console.log(`EMAIL NOT FOUND`)
 
-    const otp = generateOTP()
-    console.log(`[SIGNUP] OTP GENERATED: ${otp}`)
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000) // 10 mins
-
-    // Create user unverified
+    // Create user verified
     const user = await User.create({
       name,
       email: email.toLowerCase(),
       password,
+      securityQuestion,
+      securityAnswer,
       avatar: name.substring(0, 2).toUpperCase(),
-      isVerified: false,
-      verificationOtp: otp,
-      verificationOtpExpires: otpExpires,
+      isVerified: true,
+      verificationOtp: null,
+      verificationOtpExpires: null,
     })
-    console.log(`[SIGNUP] OTP SAVED — userId: ${user.id}`)
 
-    // Send email — non-fatal, user can use Resend OTP if it fails
-    try {
-      await sendOTP(user.email, otp, 'verification')
-      console.log(`[SIGNUP] EMAIL SENT`)
-    } catch (emailErr) {
-      console.error(`[SIGNUP] EMAIL FAILED (non-fatal): ${emailErr.message}`)
-    }
+    console.log(`USER SAVED`)
 
-    console.log(`[SIGNUP] RESPONSE RETURNED — 201`)
+    // Seed default workspace upon successful signup
+    await seedWorkspaceForUser(user.id, false)
+
+    const token = generateToken(user.id)
+
+    console.log(`RESPONSE RETURNED`)
     res.status(201).json({
-      message: 'Signup successful. Please verify your email.',
-      userId: user.id,
+      message: 'Signup successful.',
+      token,
+      user: user.toSafeObject(),
     })
   } catch (error) {
     if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({ message: error.errors.map(e => e.message).join(', ') })
     }
-    console.error('Signup error:', error)
-    res.status(500).json({ message: 'Server error during signup.' })
-  }
-})
-
-// POST /api/auth/verify-email
-router.post('/verify-email', async (req, res) => {
-  try {
-    const { userId, email, otp } = req.body
-
-    const whereClause = userId ? { id: userId } : { email: email.toLowerCase() }
-    const user = await User.findOne({ where: whereClause })
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' })
-    }
-
-    if (user.isVerified) {
-      return res.status(400).json({ message: 'Email is already verified.' })
-    }
-
-    if (user.verificationOtp !== otp) {
-      return res.status(400).json({ message: 'Invalid or expired OTP.' })
-    }
-    
-    if (new Date() > user.verificationOtpExpires) {
-      return res.status(400).json({ message: 'Invalid or expired OTP.' })
-    }
-
-    user.isVerified = true
-    user.verificationOtp = null
-    user.verificationOtpExpires = null
-    await user.save()
-
-    // Seed default workspace upon successful verification
-    await seedWorkspaceForUser(user.id, false)
-
-    const token = generateToken(user.id)
-
-    res.json({
-      message: 'Email verified successfully.',
-      token,
-      user: user.toSafeObject(),
-    })
-  } catch (error) {
-    console.error('Verify OTP error:', error)
-    res.status(500).json({ message: 'Server error during verification.' })
-  }
-})
-
-// POST /api/auth/resend-otp
-router.post('/resend-otp', async (req, res) => {
-  try {
-    const { userId, email } = req.body
-
-    const whereClause = userId ? { id: userId } : { email: email?.toLowerCase() }
-    const user = await User.findOne({ where: whereClause })
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' })
-    }
-
-    if (user.isVerified) {
-      return res.status(400).json({ message: 'Email is already verified.' })
-    }
-
-    const otp = generateOTP()
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000)
-
-    user.verificationOtp = otp
-    user.verificationOtpExpires = otpExpires
-    await user.save()
-
-    // Send real email via Nodemailer
-    await sendOTP(user.email, otp, 'verification')
-
-    res.json({ message: 'A new OTP has been sent to your email.' })
-  } catch (error) {
-    console.error('Resend OTP error:', error)
-    res.status(500).json({ message: 'Server error while resending OTP.' })
+    console.error('Signup error:', error.stack || error)
+    res.status(500).json({ message: 'Server error during signup.', details: error.message })
   }
 })
 
@@ -233,10 +152,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'No account found with this email. Please sign up!' })
     }
 
-    if (!user.isVerified && !user.isGuest) {
-      return res.status(403).json({ message: 'Please verify your email before logging in.', requiresVerification: true, userId: user.id })
-    }
-
     const isMatch = await user.comparePassword(password)
     if (!isMatch) {
       return res.status(401).json({ message: 'Incorrect password. Please try again.' })
@@ -252,61 +167,38 @@ router.post('/login', async (req, res) => {
       user: user.toSafeObject(),
     })
   } catch (error) {
-    console.error('Login error:', error)
-    res.status(500).json({ message: 'Server error during login.' })
+    console.error('Login error:', error.stack || error)
+    res.status(500).json({ message: 'Server error during login.', details: error.message })
   }
 })
 
-// POST /api/auth/forgot-password
-router.post('/forgot-password', async (req, res) => {
+// POST /api/auth/forgot-password/step1
+router.post('/forgot-password/step1', async (req, res) => {
   try {
     const { email } = req.body
-    console.log(`\n[FORGOT-PASSWORD] REQUEST RECEIVED — email: ${email}`)
-
     if (!email) {
       return res.status(400).json({ message: 'Email is required.' })
     }
 
     const user = await User.findOne({ where: { email: email.toLowerCase() } })
-
     if (!user) {
-      // Don't leak whether the email exists
-      console.log(`[FORGOT-PASSWORD] EMAIL NOT FOUND — returning generic success`)
-      return res.json({ message: 'If an account exists, an OTP has been sent.' })
+      // Don't leak whether the email exists. Return a fake security question.
+      return res.json({ securityQuestion: 'What was the name of your first pet?' })
     }
 
-    console.log(`[FORGOT-PASSWORD] EMAIL FOUND — userId: ${user.id}`)
-
-    const otp = generateOTP()
-    console.log(`[FORGOT-PASSWORD] OTP GENERATED: ${otp}`)
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000)
-    user.resetPasswordOtp = otp
-    user.resetPasswordOtpExpires = otpExpires
-    await user.save()
-    console.log(`[FORGOT-PASSWORD] OTP SAVED`)
-
-    // Send email — non-fatal so frontend always gets success response
-    try {
-      await sendOTP(user.email, otp, 'reset')
-      console.log(`[FORGOT-PASSWORD] EMAIL SENT`)
-    } catch (emailErr) {
-      console.error(`[FORGOT-PASSWORD] EMAIL FAILED (non-fatal): ${emailErr.message}`)
-    }
-
-    console.log(`[FORGOT-PASSWORD] RESPONSE RETURNED`)
-    res.json({ message: 'If an account exists, an OTP has been sent.' })
+    res.json({ securityQuestion: user.securityQuestion || 'What was the name of your first pet?' })
   } catch (error) {
-    console.error('Forgot password error:', error)
-    res.status(500).json({ message: 'Server error.' })
+    console.error('Forgot password step 1 error:', error.stack || error)
+    res.status(500).json({ message: 'Server error.', details: error.message })
   }
 })
 
-// POST /api/auth/reset-password
-router.post('/reset-password', async (req, res) => {
+// POST /api/auth/forgot-password/step2
+router.post('/forgot-password/step2', async (req, res) => {
   try {
-    const { email, otp, newPassword } = req.body
+    const { email, securityAnswer, newPassword } = req.body
 
-    if (!email || !otp || !newPassword) {
+    if (!email || !securityAnswer || !newPassword) {
       return res.status(400).json({ message: 'All fields are required.' })
     }
 
@@ -315,20 +207,23 @@ router.post('/reset-password', async (req, res) => {
     }
 
     const user = await User.findOne({ where: { email: email.toLowerCase() } })
+    if (!user) {
+      // To prevent brute forcing, just pretend it's wrong answer
+      return res.status(400).json({ message: 'Incorrect security answer.' })
+    }
 
-    if (!user || user.resetPasswordOtp !== otp || new Date() > user.resetPasswordOtpExpires) {
-      return res.status(400).json({ message: 'Invalid or expired OTP.' })
+    const isMatch = await user.compareSecurityAnswer(securityAnswer)
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect security answer.' })
     }
 
     user.password = newPassword
-    user.resetPasswordOtp = null
-    user.resetPasswordOtpExpires = null
     await user.save()
 
     res.json({ message: 'Password reset successfully. You can now log in.' })
   } catch (error) {
-    console.error('Reset password error:', error)
-    res.status(500).json({ message: 'Server error.' })
+    console.error('Forgot password step 2 error:', error.stack || error)
+    res.status(500).json({ message: 'Server error.', details: error.message })
   }
 })
 

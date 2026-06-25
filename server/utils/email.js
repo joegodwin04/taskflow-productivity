@@ -29,9 +29,9 @@ export const verifySmtp = () => {
   const t = getTransporter()
   t.verify((error) => {
     if (error) {
-      console.log(`\nSMTP CONNECTION FAILED: ${error.message}\n`)
+      console.log(`\nFull SMTP error:`, error, `\n`)
     } else {
-      console.log(`\nSMTP CONNECTION SUCCESSFUL — Gmail ready to send emails\n`)
+      console.log(`\nSMTP CONNECTED SUCCESSFULLY\n`)
     }
   })
 }

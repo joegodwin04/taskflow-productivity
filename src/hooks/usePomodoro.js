@@ -7,7 +7,7 @@ const SHORT_SECS =  5 * 60
 const LONG_SECS  = 15 * 60
 const MODE_TIMES = { work: WORK_SECS, short: SHORT_SECS, long: LONG_SECS }
 
-export function usePomodoro(user) {
+export function usePomodoro(user, showToast) {
   const [mode, setMode]       = useState('work')   // 'work' | 'short' | 'long'
   const [timeLeft, setTimeLeft] = useState(WORK_SECS)
   const [running, setRunning]   = useState(false)
@@ -19,7 +19,7 @@ export function usePomodoro(user) {
       return
     }
     try {
-      const data = await fetchAPI('/pomodoro')
+      const data = await fetchAPI('/pomodoro/sessions')
       setSessions(data.sessionCount || 0)
     } catch (e) {
       console.error('Failed to fetch pomodoro:', e)
@@ -48,13 +48,15 @@ export function usePomodoro(user) {
           setSessions(nextSessions)
           
           try {
-            await fetchAPI('/pomodoro', {
+            await fetchAPI('/pomodoro/complete', {
               method: 'POST',
               body: JSON.stringify({ sessionCount: nextSessions })
             })
+            if (showToast) showToast('Focus session complete! Time for a break.', 'success')
           } catch (e) {
             console.error('Failed to save session:', e)
             setSessions(sessions) // revert
+            if (showToast) showToast('Failed to save focus session', 'error')
           }
 
           // Auto-switch to short break

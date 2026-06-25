@@ -135,7 +135,7 @@ export default function PomodoroTimer({ compact = false, user }) {
             />
           ))}
         </div>
-        <span className={styles.sessionCount}>{sessions} completed</span>
+        <span className={styles.sessionCount}>{sessions === 0 ? 'No activity yet' : `${sessions} completed`}</span>
       </div>
     </div>
   )

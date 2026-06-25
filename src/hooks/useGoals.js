@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { fetchAPI } from '../utils/api'
 
-export function useGoals(user) {
+export function useGoals(user, showToast) {
   const [goals, setGoals] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -43,10 +43,12 @@ export function useGoals(user) {
         })
       })
       setGoals(prev => [...prev, newGoal])
+      if (showToast) showToast('Goal created', 'success')
     } catch (e) {
       console.error('Failed to add goal:', e)
+      if (showToast) showToast('Failed to add goal', 'error')
     }
-  }, [])
+  }, [showToast])
 
   const increment = useCallback(async (id, by = 1) => {
     let previousGoals = goals
@@ -63,11 +65,17 @@ export function useGoals(user) {
         method: 'PUT',
         body: JSON.stringify({ current: targetCurrent })
       })
+      if (showToast) {
+        if (targetCurrent === previousGoals.find(g => g.id === id)?.target) {
+          showToast('Goal target reached! 🎯', 'success')
+        }
+      }
     } catch (e) {
       console.error('Failed to update goal:', e)
       setGoals(previousGoals) // revert
+      if (showToast) showToast('Failed to update goal', 'error')
     }
-  }, [goals])
+  }, [goals, showToast])
 
   const decrement = useCallback(async (id) => {
     let previousGoals = goals
@@ -87,19 +95,22 @@ export function useGoals(user) {
     } catch (e) {
       console.error('Failed to update goal:', e)
       setGoals(previousGoals) // revert
+      if (showToast) showToast('Failed to update goal', 'error')
     }
-  }, [goals])
+  }, [goals, showToast])
 
   const deleteGoal = useCallback(async (id) => {
     const previousGoals = goals
     setGoals(prev => prev.filter(g => g.id !== id))
     try {
       await fetchAPI(`/goals/${id}`, { method: 'DELETE' })
+      if (showToast) showToast('Goal deleted', 'success')
     } catch (e) {
       console.error('Failed to delete goal:', e)
       setGoals(previousGoals) // revert
+      if (showToast) showToast('Failed to delete goal', 'error')
     }
-  }, [goals])
+  }, [goals, showToast])
 
   const getProgress = (goal) => goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0
 

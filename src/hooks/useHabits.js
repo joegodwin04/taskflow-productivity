@@ -10,7 +10,7 @@ const dateStr = (daysAgo = 0) => {
   return d.toISOString().split('T')[0]
 }
 
-export function useHabits(user) {
+export function useHabits(user, showToast) {
   const [habits, setHabits] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -48,10 +48,12 @@ export function useHabits(user) {
         })
       })
       setHabits(prev => [...prev, newHabit])
+      if (showToast) showToast('Habit created successfully', 'success')
     } catch (e) {
       console.error('Failed to add habit:', e)
+      if (showToast) showToast('Failed to add habit', 'error')
     }
-  }, [])
+  }, [showToast])
 
   const toggleHabit = useCallback(async (id, date = today()) => {
     let previousHabits = habits
@@ -64,26 +66,33 @@ export function useHabits(user) {
       return h
     }))
     try {
-      await fetchAPI(`/habits/${id}`, {
+      await fetchAPI(`/habits/${id}/toggle`, {
         method: 'PUT',
-        body: JSON.stringify({ completions: targetCompletions })
+        body: JSON.stringify({ date })
       })
+      if (showToast) {
+        const isNowDone = targetCompletions[date]
+        if (isNowDone) showToast('Habit completed! Keep the streak going 🔥', 'success')
+      }
     } catch (e) {
       console.error('Failed to toggle habit:', e)
       setHabits(previousHabits) // revert
+      if (showToast) showToast('Failed to sync habit toggle', 'error')
     }
-  }, [habits])
+  }, [habits, showToast])
 
   const deleteHabit = useCallback(async (id) => {
     const previousHabits = habits
     setHabits(prev => prev.filter(h => h.id !== id))
     try {
       await fetchAPI(`/habits/${id}`, { method: 'DELETE' })
+      if (showToast) showToast('Habit deleted', 'success')
     } catch (e) {
       console.error('Failed to delete habit:', e)
       setHabits(previousHabits) // revert
+      if (showToast) showToast('Failed to delete habit', 'error')
     }
-  }, [habits])
+  }, [habits, showToast])
 
   // Calculate current streak (consecutive days ending today or yesterday)
   const getStreak = useCallback((habit) => {

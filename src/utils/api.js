@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://taskflow-backend-c58w.onrender.com'
+export const API_BASE_URL = ''
 
 export const fetchAPI = async (endpoint, options = {}) => {
   const token = localStorage.getItem('tf_token')

@@ -71,6 +71,15 @@ const User = sequelize.define('User', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  // Security Questions Fields
+  securityQuestion: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  securityAnswer: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
   timestamps: true,
   hooks: {
@@ -79,11 +88,19 @@ const User = sequelize.define('User', {
         const salt = await bcrypt.genSalt(12)
         user.password = await bcrypt.hash(user.password, salt)
       }
+      if (user.securityAnswer) {
+        const salt = await bcrypt.genSalt(12)
+        user.securityAnswer = await bcrypt.hash(user.securityAnswer.toLowerCase().trim(), salt)
+      }
     },
     beforeUpdate: async (user) => {
       if (user.changed('password')) {
         const salt = await bcrypt.genSalt(12)
         user.password = await bcrypt.hash(user.password, salt)
+      }
+      if (user.changed('securityAnswer')) {
+        const salt = await bcrypt.genSalt(12)
+        user.securityAnswer = await bcrypt.hash(user.securityAnswer.toLowerCase().trim(), salt)
       }
     }
   }
@@ -94,12 +111,19 @@ User.prototype.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password)
 }
 
+// Compare entered security answer with stored bcrypt hash
+User.prototype.compareSecurityAnswer = async function (candidateAnswer) {
+  if (!this.securityAnswer) return false
+  return bcrypt.compare(candidateAnswer.toLowerCase().trim(), this.securityAnswer)
+}
+
 // Strip password from JSON output
 User.prototype.toSafeObject = function () {
   const obj = this.toJSON()
   delete obj.password
   delete obj.verificationOtp
   delete obj.resetPasswordOtp
+  delete obj.securityAnswer
   return obj
 }
 

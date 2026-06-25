@@ -1,6 +1,6 @@
 // TodoItem.jsx — Premium animated task card
 import { motion } from 'framer-motion'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import { PRIORITIES, CATEGORIES } from '../hooks/useTodos'
 import styles from './TodoItem.module.css'
 
@@ -12,7 +12,7 @@ function isDueToday(s) { return s && new Date(s).toDateString() === new Date().t
 
 const today = () => new Date().toISOString().split('T')[0]
 
-export default function TodoItem({ todo, onToggle, onDelete, onUpdate }) {
+const TodoItem = memo(function TodoItem({ todo, onToggle, onDelete, onUpdate }) {
   const [editing, setEditing]   = useState(false)
   const [editText, setEditText] = useState(todo.text)
   const [expanded, setExpanded] = useState(false)
@@ -40,7 +40,6 @@ export default function TodoItem({ todo, onToggle, onDelete, onUpdate }) {
 
   return (
     <motion.div
-      layout
       className={`${styles.card} ${todo.completed ? styles.done : ''} ${overdue ? styles.overdueCard : ''}`}
       style={{ '--p': prio.color, '--c': cat.color }}
       initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -177,4 +176,6 @@ export default function TodoItem({ todo, onToggle, onDelete, onUpdate }) {
       </motion.div>
     </motion.div>
   )
-}
+})
+
+export default TodoItem

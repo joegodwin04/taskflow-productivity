@@ -39,7 +39,7 @@ export default function ActivityTimeline({ todos }) {
       {recent.length === 0 ? (
         <div className={styles.empty}>
           <span>📋</span>
-          <p>No activity yet. Add your first task!</p>
+          <p>No activity yet</p>
         </div>
       ) : (
         <div className={styles.list}>

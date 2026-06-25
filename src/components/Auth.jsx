@@ -14,9 +14,18 @@ export default function Auth({ onLoginSuccess }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
-  const [otp, setOtp] = useState('')
+  const [securityQuestion, setSecurityQuestion] = useState('What was the name of your first pet?')
+  const [securityAnswer, setSecurityAnswer] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [remember, setRemember] = useState(true)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  const QUESTIONS = [
+    "What was the name of your first pet?",
+    "In what city were you born?",
+    "What is your mother's maiden name?",
+    "What high school did you attend?"
+  ]
   
   // Auth state
   const [userId, setUserId] = useState(null)
@@ -35,13 +44,17 @@ export default function Auth({ onLoginSuccess }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
-    const data = await res.json()
+    
+    const text = await res.text()
+    let data;
+    try {
+      data = text ? JSON.parse(text) : {}
+    } catch (e) {
+      console.error("Failed to parse JSON response:", text);
+      throw new Error("Server returned an invalid response. Please try again.")
+    }
+
     if (!res.ok) {
-      if (data.requiresVerification) {
-        setUserId(data.userId)
-        setMode('verify-otp')
-        setSuccess('Please verify your email. An OTP has been sent to your email.')
-      }
       throw new Error(data.message || 'An error occurred.')
     }
     return data
@@ -51,6 +64,18 @@ export default function Auth({ onLoginSuccess }) {
     e.preventDefault()
     setError('')
     setSuccess('')
+    
+    // Form Validation
+    if (mode === 'signup') {
+      if (!name.trim()) return setError('Please enter your full name.')
+      if (password.length < 8) return setError('Password must be at least 8 characters long.')
+      if (!securityAnswer.trim()) return setError('Please provide a security answer.')
+    }
+    if (mode === 'reset-password') {
+      if (newPassword.length < 8) return setError('New password must be at least 8 characters long.')
+      if (!securityAnswer.trim()) return setError('Please provide your security answer.')
+    }
+
     setIsLoading(true)
     
     try {
@@ -59,26 +84,22 @@ export default function Auth({ onLoginSuccess }) {
         localStorage.setItem('tf_token', data.token)
         onLoginSuccess(data.user)
       } else if (mode === 'signup') {
-        console.log("Signup clicked");
-        const data = await handleAuthApi('signup', { name, email, password })
-        setUserId(data.userId)
-        setMode('verify-otp')
-        setSuccess(data.message)
-      } else if (mode === 'verify-otp') {
-        const data = await handleAuthApi('verify-email', { userId, email, otp })
+        const data = await handleAuthApi('signup', { name, email, password, securityQuestion, securityAnswer })
+        // Auto-login after successful signup
         localStorage.setItem('tf_token', data.token)
         onLoginSuccess(data.user)
       } else if (mode === 'forgot-password') {
-        const data = await handleAuthApi('forgot-password', { email })
+        const data = await handleAuthApi('forgot-password/step1', { email })
+        setSecurityQuestion(data.securityQuestion)
         setMode('reset-password')
-        setSuccess(data.message)
+        setSuccess('Security question retrieved.')
       } else if (mode === 'reset-password') {
-        const data = await handleAuthApi('reset-password', { email, otp, newPassword })
+        const data = await handleAuthApi('forgot-password/step2', { email, securityAnswer, newPassword })
         setMode('login')
         setSuccess(data.message)
-        setOtp('')
         setPassword('')
         setNewPassword('')
+        setSecurityAnswer('')
       }
     } catch (err) {
       setError(err.message)
@@ -94,20 +115,6 @@ export default function Auth({ onLoginSuccess }) {
       const data = await handleAuthApi('guest', {})
       localStorage.setItem('tf_token', data.token)
       onLoginSuccess(data.user)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleResendOtp = async () => {
-    setIsLoading(true)
-    setError('')
-    setSuccess('')
-    try {
-      const data = await handleAuthApi('resend-otp', { userId, email })
-      setSuccess(data.message || 'OTP resent successfully.')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -209,8 +216,7 @@ export default function Auth({ onLoginSuccess }) {
             <p className={styles.subtitle}>
               {mode === 'login' ? 'Enter your details to access your dashboard' : 
                mode === 'signup' ? 'Join high-performers tracking work today' : 
-               mode === 'verify-otp' ? 'Enter the 6-digit OTP sent to your email' :
-               mode === 'forgot-password' ? 'Enter your email to receive a password reset OTP' : 'Enter the OTP and your new password'}
+               mode === 'forgot-password' ? 'Enter your email to reset your password' : 'Enter your new password'}
             </p>
           </div>
           
@@ -270,6 +276,63 @@ export default function Auth({ onLoginSuccess }) {
                   />
                 </div>
               )}
+
+              {mode === 'signup' && (
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label}>Security Question</label>
+                  <div className={styles.customSelectWrap}>
+                    <button 
+                      type="button" 
+                      className={styles.customSelectBtn}
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                    >
+                      <span>{securityQuestion}</span>
+                      <ChevronIcon open={dropdownOpen} />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <motion.div 
+                          className={styles.customSelectDropdown}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.15 }}
+                        >
+                          {QUESTIONS.map(q => (
+                            <button
+                              key={q}
+                              type="button"
+                              className={styles.customSelectOption}
+                              onClick={() => {
+                                setSecurityQuestion(q)
+                                setDropdownOpen(false)
+                              }}
+                            >
+                              {q}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              )}
+
+              {mode === 'signup' && (
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="securityAnswer">Security Answer</label>
+                  <input 
+                    type="text" 
+                    id="securityAnswer"
+                    className={styles.input} 
+                    placeholder="Your answer" 
+                    value={securityAnswer}
+                    onChange={(e) => setSecurityAnswer(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
               
               {(mode === 'login' || mode === 'signup' || mode === 'forgot-password' || mode === 'reset-password') && (
                 <div className={styles.fieldGroup}>
@@ -318,44 +381,50 @@ export default function Auth({ onLoginSuccess }) {
                 </div>
               )}
 
-              {(mode === 'verify-otp' || mode === 'reset-password') && (
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label} htmlFor="otp">6-Digit OTP</label>
-                  <input 
-                    type="text" 
-                    id="otp"
-                    className={styles.input} 
-                    placeholder="123456" 
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    required
-                    maxLength={6}
-                  />
-                </div>
-              )}
-
               {mode === 'reset-password' && (
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label} htmlFor="newPassword">New Password</label>
-                  <div className={styles.inputWrap}>
+                <>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Security Question</label>
+                    <div style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.5rem', fontSize: '0.9rem', color: 'var(--text-200)', marginBottom: '0.5rem' }}>
+                      {securityQuestion}
+                    </div>
+                  </div>
+                  
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label} htmlFor="securityAnswer">Your Answer</label>
                     <input 
-                      type={showPassword ? 'text' : 'password'} 
-                      id="newPassword"
-                      className={`${styles.input} ${styles.inputWithIcon}`} 
-                      placeholder="••••••••" 
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      type="text" 
+                      id="securityAnswer"
+                      className={styles.input} 
+                      placeholder="Answer" 
+                      value={securityAnswer}
+                      onChange={(e) => setSecurityAnswer(e.target.value)}
                       required
                     />
-                    <button 
-                      type="button" 
-                      className={styles.eyeButton}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                    </button>
                   </div>
-                </div>
+
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label} htmlFor="newPassword">New Password</label>
+                    <div className={styles.inputWrap}>
+                      <input 
+                        type={showPassword ? 'text' : 'password'} 
+                        id="newPassword"
+                        className={`${styles.input} ${styles.inputWithIcon}`} 
+                        placeholder="••••••••" 
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                      />
+                      <button 
+                        type="button" 
+                        className={styles.eyeButton}
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
               
               {mode === 'login' && (
@@ -372,16 +441,11 @@ export default function Auth({ onLoginSuccess }) {
                 </div>
               )}
 
-              {(mode === 'verify-otp' || mode === 'forgot-password' || mode === 'reset-password') && (
+              {(mode === 'forgot-password' || mode === 'reset-password') && (
                 <div className={styles.metaRow} style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
                   <a href="#back" className={styles.forgotLink} onClick={(e) => { e.preventDefault(); switchMode('login'); }}>
                     ← Back to Login
                   </a>
-                  {mode === 'verify-otp' && (
-                    <a href="#resend" className={styles.forgotLink} onClick={(e) => { e.preventDefault(); handleResendOtp(); }}>
-                      Resend OTP
-                    </a>
-                  )}
                 </div>
               )}
               
@@ -402,8 +466,7 @@ export default function Auth({ onLoginSuccess }) {
                   <span>{
                     mode === 'login' ? 'Continue with Email' : 
                     mode === 'signup' ? 'Create Account' : 
-                    mode === 'verify-otp' ? 'Verify Email' :
-                    mode === 'forgot-password' ? 'Send OTP' : 'Reset Password'
+                    mode === 'forgot-password' ? 'Reset Password' : 'Change Password'
                   }</span>
                 )}
               </button>
@@ -454,5 +517,24 @@ function EyeOffIcon() {
       <path d="M17.94 17.94A10.07 10.07 0 0110 20c-6 0-9-6-9-6a17.93 17.93 0 013.06-4.06M9.9 4.24A9.12 9.12 0 0110 4c6 0 9 6 9 6a18 18 0 01-1.92 2.56M12.83 12.83A3 3 0 018 8l4.83 4.83z" />
       <path d="M1 1l18 18" />
     </svg>
+  )
+}
+
+function ChevronIcon({ open }) {
+  return (
+    <motion.svg 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      width="16" 
+      height="16" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      animate={{ rotate: open ? 180 : 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </motion.svg>
   )
 }

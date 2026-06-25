@@ -9,7 +9,16 @@ const EMPTY = {
   completed: { icon: '📭', title: 'Nothing here yet',   sub: 'Complete tasks to see them here.' },
 }
 
-export default function TodoList({ todos, filter, onToggle, onDelete, onUpdate }) {
+export default function TodoList({ todos, filter, loading, onToggle, onDelete, onUpdate }) {
+  if (loading) {
+    return (
+      <div className={styles.empty} style={{ animation: 'pulse 1.5s infinite', opacity: 0.6 }}>
+        <h3 className={styles.emptyTitle}>Loading tasks...</h3>
+        <p className={styles.emptySub}>Please wait while we sync your workspace.</p>
+      </div>
+    )
+  }
+
   if (todos.length === 0) {
     const e = EMPTY[filter] || EMPTY.all
     return (
@@ -33,8 +42,8 @@ export default function TodoList({ todos, filter, onToggle, onDelete, onUpdate }
   }
 
   return (
-    <motion.div className={styles.list} layout>
-      <AnimatePresence mode="popLayout">
+    <div className={styles.list}>
+      <AnimatePresence>
         {todos.map(todo => (
           <TodoItem
             key={todo.id}
@@ -45,6 +54,6 @@ export default function TodoList({ todos, filter, onToggle, onDelete, onUpdate }
           />
         ))}
       </AnimatePresence>
-    </motion.div>
+    </div>
   )
 }

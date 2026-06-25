@@ -1,7 +1,9 @@
 // index.js — Express server entry point
+import dotenv from 'dotenv'
+dotenv.config() // Load env vars before anything else
+
 import express from 'express'
 import cors from 'cors'
-import dotenv from 'dotenv'
 import { connectDB } from './config/db.js'
 import { sequelize } from './models/index.js' // This ensures associations are loaded
 
@@ -14,12 +16,10 @@ import pomodoroRouter from './routes/pomodoro.js'
 import usersRouter from './routes/users.js'
 import { verifySmtp } from './utils/email.js'
 
-// Load environment variables
-dotenv.config()
 
 // Connect to Database and sync models
 await connectDB()
-await sequelize.sync() // Creates tables if they don't exist
+await sequelize.sync();// Creates tables if they don't exist
 
 const app = express()
 

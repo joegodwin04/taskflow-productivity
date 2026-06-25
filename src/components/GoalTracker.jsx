@@ -72,7 +72,7 @@ export default function GoalTracker({ user }) {
         <AnimatePresence>
           {goals.length === 0 && !adding && (
             <motion.div className={styles.empty} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <span>🏆</span><p>No goals yet. Set your first goal!</p>
+              <span>🏆</span><p>No activity yet</p>
             </motion.div>
           )}
           {goals.map((g, i) => {
