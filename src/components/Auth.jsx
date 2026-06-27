@@ -459,7 +459,12 @@ export default function Auth({ onLoginSuccess }) {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <span className={styles.loadingSpinner} />
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className={styles.loadingSpinner} />
+                    {mode === 'login' ? 'Signing in...' :
+                      mode === 'signup' ? 'Creating Account...' :
+                        mode === 'forgot-password' ? 'Processing...' : 'Updating...'}
+                  </span>
                 ) : (
                   <span>{
                     mode === 'login' ? 'Continue with Email' :

@@ -43,6 +43,9 @@ const Task = sequelize.define('Task', {
   },
 }, {
   timestamps: true,
+  indexes: [
+    { fields: ['userId'] }
+  ]
 })
 
 export default Task

@@ -32,6 +32,9 @@ const Habit = sequelize.define('Habit', {
   },
 }, {
   timestamps: true,
+  indexes: [
+    { fields: ['userId'] }
+  ]
 })
 
 export default Habit

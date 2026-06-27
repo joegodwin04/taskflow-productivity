@@ -60,15 +60,15 @@ export default function App() {
     setUserId(user?.id || null)
   }, [user?.id, setUserId])
 
-  const handleLoginSuccess = (userData) => {
+  const handleLoginSuccess = useCallback((userData) => {
     // Remove password field before storing in React state / localStorage
     const safeUser = { ...userData }
     delete safeUser.password
     setUser(safeUser)
     localStorage.setItem('tf_user', JSON.stringify(safeUser))
-  }
+  }, [])
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     if (user && user.id && user.id.startsWith('guest_')) {
       // Clear this guest's temporary session data
       const keysToClear = [
@@ -92,9 +92,10 @@ export default function App() {
     setProfileOpen(false)
     setActiveSettingsTab(null)
     setUser(null)
+    localStorage.setItem('tf_user', '') // Clear cleanly
     localStorage.removeItem('tf_user')
     localStorage.removeItem('tf_token')
-  }
+  }, [user])
 
   const {
     todos, filteredTodos, stats, loading: todosLoading,
@@ -112,10 +113,10 @@ export default function App() {
     return parseInt(localStorage.getItem(`taskflow_${user.id}_analytics`) || '0', 10)
   }, [user])
 
-  const handleSetView = (v) => {
+  const handleSetView = useCallback((v) => {
     setView(v)
     if (v === 'tasks') { /* keep current filter */ }
-  }
+  }, [])
 
   // Notifications derived from state
   const notifications = useMemo(() => {

@@ -45,6 +45,9 @@ const Goal = sequelize.define('Goal', {
   },
 }, {
   timestamps: true,
+  indexes: [
+    { fields: ['userId'] }
+  ]
 })
 
 export default Goal

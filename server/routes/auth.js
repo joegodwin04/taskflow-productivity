@@ -157,9 +157,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Incorrect password. Please try again.' })
     }
 
-    // Ensure workspace is seeded
-    await seedWorkspaceForUser(user.id, false)
-
     const token = generateToken(user.id, remember)
 
     res.json({
