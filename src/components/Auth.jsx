@@ -206,7 +206,7 @@ export default function Auth({ onLoginSuccess }) {
               <LogoIcon />
             </div>
             <h2 className={styles.title}>
-              {mode === 'login' ? 'Welcome back 👋' :
+              {mode === 'login' ? 'Welcome back' :
                 mode === 'signup' ? 'Create your workspace' :
                   mode === 'verify-otp' ? 'Verify your email' :
                     mode === 'forgot-password' ? 'Forgot Password' : 'Reset Password'}
