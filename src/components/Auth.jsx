@@ -8,7 +8,7 @@ import { API_BASE_URL } from '../utils/api'
 export default function Auth({ onLoginSuccess }) {
   const { theme } = useTheme()
   const [mode, setMode] = useState('login') // 'login' | 'signup' | 'verify-otp' | 'forgot-password' | 'reset-password'
-  
+
   // Form fields
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -26,10 +26,8 @@ export default function Auth({ onLoginSuccess }) {
     "What is your mother's maiden name?",
     "What high school did you attend?"
   ]
-  
-  // Auth state
-  const [userId, setUserId] = useState(null)
-  
+
+
   // Feedback states
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -44,14 +42,14 @@ export default function Auth({ onLoginSuccess }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
-    
+
     const text = await res.text()
     let data;
     try {
       data = text ? JSON.parse(text) : {}
     } catch (e) {
       console.error("Failed to parse JSON response:", text);
-      throw new Error("Server returned an invalid response. Please try again.")
+      throw new Error("Server returned an invalid response. Please try again.", { cause: e })
     }
 
     if (!res.ok) {
@@ -64,7 +62,7 @@ export default function Auth({ onLoginSuccess }) {
     e.preventDefault()
     setError('')
     setSuccess('')
-    
+
     // Form Validation
     if (mode === 'signup') {
       if (!name.trim()) return setError('Please enter your full name.')
@@ -77,7 +75,7 @@ export default function Auth({ onLoginSuccess }) {
     }
 
     setIsLoading(true)
-    
+
     try {
       if (mode === 'login') {
         const data = await handleAuthApi('login', { email, password, remember })
@@ -136,7 +134,7 @@ export default function Auth({ onLoginSuccess }) {
 
   return (
     <div className={styles.wrap} data-theme={theme}>
-      
+
       {/* ── MARKETING SHOWCASE PANEL (LEFT) ── */}
       <div className={styles.marketingSide}>
         <div className={styles.marketingHeader}>
@@ -145,21 +143,21 @@ export default function Auth({ onLoginSuccess }) {
           </div>
           <span className={styles.marketingBrand}>TaskFlow</span>
         </div>
-        
+
         <div className={styles.marketingBody}>
           <div className={styles.marketingTag}>
             <span>✨ SYSTEM RELEASE V5.0</span>
           </div>
-          
+
           <h1 className={styles.marketingTitle}>
             Organize work.<br />
             Focus on what <span>matters.</span>
           </h1>
-          
+
           <p className={styles.marketingDesc}>
             The premium workspace designed for developers, builders, and high-performance teams. Combine tasks, goals, habits, and deep focus sessions in one gorgeous cockpit.
           </p>
-          
+
           {/* Decorative premium floating element */}
           <div className={styles.mockupWrap}>
             <div className={styles.mockupHeader}>
@@ -184,7 +182,7 @@ export default function Auth({ onLoginSuccess }) {
             </div>
           </div>
         </div>
-        
+
         <div className={styles.marketingFooter}>
           <span>© 2026 TaskFlow Technologies Inc.</span>
           <div className={styles.footerStats}>
@@ -199,7 +197,7 @@ export default function Auth({ onLoginSuccess }) {
           </div>
         </div>
       </div>
-      
+
       {/* ── AUTH FORMS PANEL (RIGHT) ── */}
       <div className={styles.formSide}>
         <div className={styles.card}>
@@ -208,48 +206,48 @@ export default function Auth({ onLoginSuccess }) {
               <LogoIcon />
             </div>
             <h2 className={styles.title}>
-              {mode === 'login' ? 'Welcome back' : 
-               mode === 'signup' ? 'Create your workspace' : 
-               mode === 'verify-otp' ? 'Verify your email' :
-               mode === 'forgot-password' ? 'Forgot Password' : 'Reset Password'}
+              {mode === 'login' ? 'Welcome back 👋' :
+                mode === 'signup' ? 'Create your workspace' :
+                  mode === 'verify-otp' ? 'Verify your email' :
+                    mode === 'forgot-password' ? 'Forgot Password' : 'Reset Password'}
             </h2>
             <p className={styles.subtitle}>
-              {mode === 'login' ? 'Enter your details to access your dashboard' : 
-               mode === 'signup' ? 'Join high-performers tracking work today' : 
-               mode === 'forgot-password' ? 'Enter your email to reset your password' : 'Enter your new password'}
+              {mode === 'login' ? 'Enter your details to access your dashboard' :
+                mode === 'signup' ? 'Join high-performers tracking work today' :
+                  mode === 'forgot-password' ? 'Enter your email to reset your password' : 'Enter your new password'}
             </p>
           </div>
-          
+
           {/* Animated Tab Switcher (Only show on Login/Signup) */}
           {(mode === 'login' || mode === 'signup') && (
             <div className={styles.tabRow}>
-              <button 
-                type="button" 
-                className={`${styles.tabBtn} ${mode === 'login' ? styles.tabBtnActive : ''}`} 
+              <button
+                type="button"
+                className={`${styles.tabBtn} ${mode === 'login' ? styles.tabBtnActive : ''}`}
                 onClick={() => switchMode('login')}
               >
                 Log In
               </button>
-              <button 
-                type="button" 
-                className={`${styles.tabBtn} ${mode === 'signup' ? styles.tabBtnActive : ''}`} 
+              <button
+                type="button"
+                className={`${styles.tabBtn} ${mode === 'signup' ? styles.tabBtnActive : ''}`}
                 onClick={() => switchMode('signup')}
               >
                 Sign Up
               </button>
-              <motion.div 
-                className={styles.tabIndicator} 
+              <motion.div
+                className={styles.tabIndicator}
                 animate={{ x: mode === 'login' ? '0%' : '100%' }}
                 transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               />
             </div>
           )}
-          
+
           {/* Animated Form container */}
           <AnimatePresence mode="wait">
-            <motion.form 
-              key={mode} 
-              className={styles.form} 
+            <motion.form
+              key={mode}
+              className={styles.form}
               onSubmit={handleSubmit}
               variants={formVariants}
               initial="initial"
@@ -265,11 +263,11 @@ export default function Auth({ onLoginSuccess }) {
               {mode === 'signup' && (
                 <div className={styles.fieldGroup}>
                   <label className={styles.label} htmlFor="name">Full Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     id="name"
-                    className={styles.input} 
-                    placeholder="Joe Godwin" 
+                    className={styles.input}
+                    placeholder="Joe Godwin"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
@@ -281,18 +279,18 @@ export default function Auth({ onLoginSuccess }) {
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Security Question</label>
                   <div className={styles.customSelectWrap}>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className={styles.customSelectBtn}
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                     >
                       <span>{securityQuestion}</span>
                       <ChevronIcon open={dropdownOpen} />
                     </button>
-                    
+
                     <AnimatePresence>
                       {dropdownOpen && (
-                        <motion.div 
+                        <motion.div
                           className={styles.customSelectDropdown}
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -322,33 +320,33 @@ export default function Auth({ onLoginSuccess }) {
               {mode === 'signup' && (
                 <div className={styles.fieldGroup}>
                   <label className={styles.label} htmlFor="securityAnswer">Security Answer</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     id="securityAnswer"
-                    className={styles.input} 
-                    placeholder="Your answer" 
+                    className={styles.input}
+                    placeholder="Your answer"
                     value={securityAnswer}
                     onChange={(e) => setSecurityAnswer(e.target.value)}
                     required
                   />
                 </div>
               )}
-              
+
               {(mode === 'login' || mode === 'signup' || mode === 'forgot-password' || mode === 'reset-password') && (
                 <div className={styles.fieldGroup}>
                   <label className={styles.label} htmlFor="email">Work Email</label>
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     id="email"
-                    className={styles.input} 
-                    placeholder="name@company.com" 
+                    className={styles.input}
+                    placeholder="name@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
               )}
-              
+
               {(mode === 'login' || mode === 'signup') && (
                 <div className={styles.fieldGroup}>
                   <div className={styles.labelRow}>
@@ -360,17 +358,17 @@ export default function Auth({ onLoginSuccess }) {
                     )}
                   </div>
                   <div className={styles.inputWrap}>
-                    <input 
-                      type={showPassword ? 'text' : 'password'} 
+                    <input
+                      type={showPassword ? 'text' : 'password'}
                       id="password"
-                      className={`${styles.input} ${styles.inputWithIcon}`} 
-                      placeholder="••••••••" 
+                      className={`${styles.input} ${styles.inputWithIcon}`}
+                      placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className={styles.eyeButton}
                       onClick={() => setShowPassword(!showPassword)}
                       title={showPassword ? 'Hide password' : 'Show password'}
@@ -389,14 +387,14 @@ export default function Auth({ onLoginSuccess }) {
                       {securityQuestion}
                     </div>
                   </div>
-                  
+
                   <div className={styles.fieldGroup}>
                     <label className={styles.label} htmlFor="securityAnswer">Your Answer</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       id="securityAnswer"
-                      className={styles.input} 
-                      placeholder="Answer" 
+                      className={styles.input}
+                      placeholder="Answer"
                       value={securityAnswer}
                       onChange={(e) => setSecurityAnswer(e.target.value)}
                       required
@@ -406,17 +404,17 @@ export default function Auth({ onLoginSuccess }) {
                   <div className={styles.fieldGroup}>
                     <label className={styles.label} htmlFor="newPassword">New Password</label>
                     <div className={styles.inputWrap}>
-                      <input 
-                        type={showPassword ? 'text' : 'password'} 
+                      <input
+                        type={showPassword ? 'text' : 'password'}
                         id="newPassword"
-                        className={`${styles.input} ${styles.inputWithIcon}`} 
-                        placeholder="••••••••" 
+                        className={`${styles.input} ${styles.inputWithIcon}`}
+                        placeholder="••••••••"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
                       />
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className={styles.eyeButton}
                         onClick={() => setShowPassword(!showPassword)}
                       >
@@ -426,13 +424,13 @@ export default function Auth({ onLoginSuccess }) {
                   </div>
                 </>
               )}
-              
+
               {mode === 'login' && (
                 <div className={styles.metaRow}>
                   <label className={styles.checkboxLabel}>
-                    <input 
-                      type="checkbox" 
-                      className={styles.checkbox} 
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
                       checked={remember}
                       onChange={(e) => setRemember(e.target.checked)}
                     />
@@ -448,34 +446,34 @@ export default function Auth({ onLoginSuccess }) {
                   </a>
                 </div>
               )}
-              
+
               {error && (
                 <div className={styles.errorMsg}>
                   <span>⚠️</span> {error}
                 </div>
               )}
-              
-              <button 
-                type="submit" 
-                className={styles.ctaBtn} 
+
+              <button
+                type="submit"
+                className={styles.ctaBtn}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <span className={styles.loadingSpinner} />
                 ) : (
                   <span>{
-                    mode === 'login' ? 'Continue with Email' : 
-                    mode === 'signup' ? 'Create Account' : 
-                    mode === 'forgot-password' ? 'Reset Password' : 'Change Password'
+                    mode === 'login' ? 'Continue with Email' :
+                      mode === 'signup' ? 'Create Account' :
+                        mode === 'forgot-password' ? 'Reset Password' : 'Change Password'
                   }</span>
                 )}
               </button>
-              
+
               {/* Premium explore guest button for testing and direct entry */}
               {(mode === 'login' || mode === 'signup') && (
-                <button 
-                  type="button" 
-                  className={`${styles.ctaBtn} ${styles.guestBtn}`} 
+                <button
+                  type="button"
+                  className={`${styles.ctaBtn} ${styles.guestBtn}`}
                   onClick={handleGuestAccess}
                   disabled={isLoading}
                 >
@@ -484,10 +482,10 @@ export default function Auth({ onLoginSuccess }) {
               )}
             </motion.form>
           </AnimatePresence>
-          
+
         </div>
       </div>
-      
+
     </div>
   )
 }
@@ -497,7 +495,7 @@ export default function Auth({ onLoginSuccess }) {
 function LogoIcon() {
   return (
     <svg viewBox="0 0 32 32" fill="none" style={{ width: 22, height: 22 }}>
-      <path d="M9 16.5L13.5 21L23 11" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M9 16.5L13.5 21L23 11" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -522,14 +520,14 @@ function EyeOffIcon() {
 
 function ChevronIcon({ open }) {
   return (
-    <motion.svg 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      width="16" 
-      height="16" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
+    <motion.svg
+      viewBox="0 0 24 24"
+      fill="none"
+      width="16"
+      height="16"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
       strokeLinejoin="round"
       animate={{ rotate: open ? 180 : 0 }}
       transition={{ duration: 0.2 }}
