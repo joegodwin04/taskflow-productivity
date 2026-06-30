@@ -1,8 +1,7 @@
-// Task.js — Sequelize model for TaskFlow tasks/todos
 import { DataTypes } from 'sequelize'
 import sequelize from '../config/db.js'
 
-const Task = sequelize.define('Task', {
+const Routine = sequelize.define('Routine', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -17,10 +16,6 @@ const Task = sequelize.define('Task', {
     allowNull: false,
     validate: { notEmpty: true },
   },
-  completed: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
   priority: {
     type: DataTypes.ENUM('high', 'medium', 'low'),
     defaultValue: 'medium',
@@ -29,37 +24,13 @@ const Task = sequelize.define('Task', {
     type: DataTypes.ENUM('work', 'personal', 'health', 'learning', 'other'),
     defaultValue: 'other',
   },
-  dueDate: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  notes: {
+  scheduleType: {
     type: DataTypes.STRING,
-    defaultValue: '',
+    defaultValue: 'daily',
   },
-  completedAt: {
-    type: DataTypes.DATE,
+  scheduleDays: {
+    type: DataTypes.JSON,
     allowNull: true,
-  },
-  deletedAt: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  archivedAt: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  routineId: {
-    type: DataTypes.UUID,
-    allowNull: true,
-  },
-  routineDate: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  isMissed: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
   },
 }, {
   timestamps: true,
@@ -68,4 +39,4 @@ const Task = sequelize.define('Task', {
   ]
 })
 
-export default Task
+export default Routine

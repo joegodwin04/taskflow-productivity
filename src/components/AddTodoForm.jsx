@@ -10,6 +10,9 @@ export default function AddTodoForm({ onAdd }) {
   const [text, setText] = useState('')
   const [priority, setPriority] = useState('medium')
   const [category, setCategory] = useState('other')
+  const [isRoutine, setIsRoutine] = useState(false)
+  const [scheduleType, setScheduleType] = useState('daily')
+  const [scheduleDays, setScheduleDays] = useState([])
   const [dueDate, setDueDate] = useState('')
   const [notes, setNotes] = useState('')
   const [shake, setShake] = useState(false)
@@ -23,12 +26,24 @@ export default function AddTodoForm({ onAdd }) {
       inputRef.current?.focus()
       return
     }
-    onAdd({ text, priority, category, dueDate: dueDate || null, notes })
+    onAdd({ 
+      text, 
+      priority, 
+      category, 
+      isRoutine,
+      scheduleType: isRoutine ? scheduleType : null,
+      scheduleDays: isRoutine && scheduleType === 'weekly' ? scheduleDays : null,
+      dueDate: !isRoutine && dueDate ? dueDate : null, 
+      notes: !isRoutine ? notes : '' 
+    })
     setText('')
     setNotes('')
     setDueDate('')
     setPriority('medium')
     setCategory('other')
+    setIsRoutine(false)
+    setScheduleType('daily')
+    setScheduleDays([])
     setExpanded(false)
   }
 
@@ -106,32 +121,85 @@ export default function AddTodoForm({ onAdd }) {
               </div>
             </div>
 
-            {/* Due date & notes */}
-            <div className={styles.row2}>
-              <div className={styles.optionGroup}>
-                <label className={styles.optionLabel} htmlFor="due-date-input">Due Date</label>
-                <input
-                  id="due-date-input"
-                  type="date"
-                  className={styles.dateInput}
-                  value={dueDate}
-                  min={today()}
-                  onChange={e => setDueDate(e.target.value)}
-                />
-              </div>
-              <div className={`${styles.optionGroup} ${styles.grow}`}>
-                <label className={styles.optionLabel} htmlFor="notes-input">Notes</label>
-                <input
-                  id="notes-input"
-                  type="text"
-                  className={styles.notesInput}
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  placeholder="Optional notes..."
-                  maxLength={300}
-                />
+            {/* Task Type Toggle */}
+            <div className={styles.optionGroup}>
+              <div className={styles.typeToggle}>
+                <button
+                  type="button"
+                  className={`${styles.typeBtn} ${!isRoutine ? styles.active : ''}`}
+                  onClick={() => setIsRoutine(false)}
+                >
+                  One-time Task
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.typeBtn} ${isRoutine ? styles.active : ''}`}
+                  onClick={() => setIsRoutine(true)}
+                >
+                  Daily Routine
+                </button>
               </div>
             </div>
+
+            {/* Due date & notes OR Schedule */}
+            {isRoutine ? (
+              <div className={styles.row2}>
+                <div className={`${styles.optionGroup} ${styles.grow}`}>
+                  <label className={styles.optionLabel}>Schedule</label>
+                  <div className={styles.scheduleOptions}>
+                    <button type="button" className={`${styles.schedBtn} ${scheduleType === 'daily' ? styles.active : ''}`} onClick={() => setScheduleType('daily')}>Every Day</button>
+                    <button type="button" className={`${styles.schedBtn} ${scheduleType === 'weekdays' ? styles.active : ''}`} onClick={() => setScheduleType('weekdays')}>Weekdays</button>
+                    <button type="button" className={`${styles.schedBtn} ${scheduleType === 'weekly' ? styles.active : ''}`} onClick={() => setScheduleType('weekly')}>Custom</button>
+                  </div>
+                  {scheduleType === 'weekly' && (
+                    <div className={styles.daySelector}>
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => {
+                        const active = scheduleDays.includes(idx)
+                        return (
+                          <button 
+                            key={day} 
+                            type="button" 
+                            className={`${styles.dayBtn} ${active ? styles.active : ''}`}
+                            onClick={() => {
+                              if (active) setScheduleDays(prev => prev.filter(d => d !== idx))
+                              else setScheduleDays(prev => [...prev, idx])
+                            }}
+                          >
+                            {day[0]}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className={styles.row2}>
+                <div className={styles.optionGroup}>
+                  <label className={styles.optionLabel} htmlFor="due-date-input">Due Date</label>
+                  <input
+                    id="due-date-input"
+                    type="date"
+                    className={styles.dateInput}
+                    value={dueDate}
+                    min={today()}
+                    onChange={e => setDueDate(e.target.value)}
+                  />
+                </div>
+                <div className={`${styles.optionGroup} ${styles.grow}`}>
+                  <label className={styles.optionLabel} htmlFor="notes-input">Notes</label>
+                  <input
+                    id="notes-input"
+                    type="text"
+                    className={styles.notesInput}
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    placeholder="Optional notes..."
+                    maxLength={300}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className={styles.actions}>

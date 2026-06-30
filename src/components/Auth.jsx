@@ -1,9 +1,9 @@
-// Auth.jsx — Persistent User Registry and Authentication screen Loop via API
+// Auth.jsx — Premium SaaS Authentication — UI Redesign
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../context/ThemeContext'
 import styles from './Auth.module.css'
-import { API_BASE_URL } from '../utils/api'
+import { fetchAPI } from '../utils/api'
 
 export default function Auth({ onLoginSuccess }) {
   const { theme } = useTheme()
@@ -27,35 +27,16 @@ export default function Auth({ onLoginSuccess }) {
     "What high school did you attend?"
   ]
 
-
   // Feedback states
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   const handleAuthApi = async (endpoint, payload) => {
-    if (endpoint === 'signup') {
-      console.log("Sending signup request", payload);
-    }
-    const res = await fetch(`${API_BASE_URL}/api/auth/${endpoint}`, {
+    return await fetchAPI(`/auth/${endpoint}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
-
-    const text = await res.text()
-    let data;
-    try {
-      data = text ? JSON.parse(text) : {}
-    } catch (e) {
-      console.error("Failed to parse JSON response:", text);
-      throw new Error("Server returned an invalid response. Please try again.", { cause: e })
-    }
-
-    if (!res.ok) {
-      throw new Error(data.message || 'An error occurred.')
-    }
-    return data
   }
 
   const handleSubmit = async (e) => {
@@ -63,7 +44,6 @@ export default function Auth({ onLoginSuccess }) {
     setError('')
     setSuccess('')
 
-    // Form Validation
     if (mode === 'signup') {
       if (!name.trim()) return setError('Please enter your full name.')
       if (password.length < 8) return setError('Password must be at least 8 characters long.')
@@ -79,13 +59,16 @@ export default function Auth({ onLoginSuccess }) {
     try {
       if (mode === 'login') {
         const data = await handleAuthApi('login', { email, password, remember })
-        localStorage.setItem('tf_token', data.token)
-        onLoginSuccess(data.user)
+        if (remember) {
+          localStorage.setItem('tf_token', data.token)
+        } else {
+          sessionStorage.setItem('tf_token', data.token)
+        }
+        onLoginSuccess(data.user, remember)
       } else if (mode === 'signup') {
         const data = await handleAuthApi('signup', { name, email, password, securityQuestion, securityAnswer })
-        // Auto-login after successful signup
         localStorage.setItem('tf_token', data.token)
-        onLoginSuccess(data.user)
+        onLoginSuccess(data.user, true)
       } else if (mode === 'forgot-password') {
         const data = await handleAuthApi('forgot-password/step1', { email })
         setSecurityQuestion(data.securityQuestion)
@@ -112,7 +95,7 @@ export default function Auth({ onLoginSuccess }) {
     try {
       const data = await handleAuthApi('guest', {})
       localStorage.setItem('tf_token', data.token)
-      onLoginSuccess(data.user)
+      onLoginSuccess(data.user, true)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -127,379 +110,517 @@ export default function Auth({ onLoginSuccess }) {
   }
 
   const formVariants = {
-    initial: { opacity: 0, x: mode === 'login' ? -15 : 15, y: 0 },
-    animate: { opacity: 1, x: 0, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
-    exit: { opacity: 0, x: mode === 'login' ? 15 : -15, transition: { duration: 0.2 } }
+    initial: { opacity: 0, y: 12, filter: 'blur(4px)' },
+    animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, y: -8, filter: 'blur(4px)', transition: { duration: 0.25 } }
+  }
+
+  const getTitle = () => {
+    if (mode === 'login') return 'Welcome back'
+    if (mode === 'signup') return 'Start for free'
+    if (mode === 'forgot-password') return 'Reset password'
+    return 'New password'
+  }
+
+  const getSubtitle = () => {
+    if (mode === 'login') return 'Sign in to your workspace'
+    if (mode === 'signup') return 'Build better habits, focus deeper'
+    if (mode === 'forgot-password') return 'We\'ll help you recover access'
+    return 'Create your new secure password'
   }
 
   return (
     <div className={styles.wrap} data-theme={theme}>
 
-      {/* ── MARKETING SHOWCASE PANEL (LEFT) ── */}
-      <div className={styles.marketingSide}>
-        <div className={styles.marketingHeader}>
-          <div className={styles.marketingLogo}>
-            <LogoIcon />
-          </div>
-          <span className={styles.marketingBrand}>TaskFlow</span>
-        </div>
-
-        <div className={styles.marketingBody}>
-          <div className={styles.marketingTag}>
-            <span>✨ SYSTEM RELEASE V5.0</span>
-          </div>
-
-          <h1 className={styles.marketingTitle}>
-            Organize work.<br />
-            Focus on what <span>matters.</span>
-          </h1>
-
-          <p className={styles.marketingDesc}>
-            The premium workspace designed for developers, builders, and high-performance teams. Combine tasks, goals, habits, and deep focus sessions in one gorgeous cockpit.
-          </p>
-
-          {/* Decorative premium floating element */}
-          <div className={styles.mockupWrap}>
-            <div className={styles.mockupHeader}>
-              <div className={styles.mockupDots}>
-                <span className={styles.mockupDot} />
-                <span className={styles.mockupDot} />
-                <span className={styles.mockupDot} />
-              </div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-300)' }}>TaskFlow cockpit.exe</span>
-            </div>
-            <div className={styles.mockupItem}>
-              <div className={styles.mockupCheck}>✓</div>
-              <div className={styles.mockupLine} />
-            </div>
-            <div className={styles.mockupItem}>
-              <div className={styles.mockupCheck} style={{ borderColor: 'rgba(255,255,255,0.1)' }}></div>
-              <div className={styles.mockupLine} />
-            </div>
-            <div className={styles.mockupItem} style={{ marginBottom: 0 }}>
-              <div className={styles.mockupCheck} style={{ borderColor: 'rgba(255,255,255,0.1)' }}></div>
-              <div className={styles.mockupLine} style={{ width: '60%', flexGrow: 0 }} />
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.marketingFooter}>
-          <span>© 2026 TaskFlow Technologies Inc.</span>
-          <div className={styles.footerStats}>
-            <div className={styles.statItem}>
-              <span className={styles.statVal}>99.9%</span>
-              <span className={styles.statLbl}>Uptime</span>
-            </div>
-            <div className={styles.statItem}>
-              <span className={styles.statVal}>120k+</span>
-              <span className={styles.statLbl}>Active Builders</span>
-            </div>
-          </div>
-        </div>
+      {/* ── Ambient Background ── */}
+      <div className={styles.ambientBg}>
+        <div className={styles.orb1} />
+        <div className={styles.orb2} />
+        <div className={styles.orb3} />
+        <div className={styles.grid} />
       </div>
 
-      {/* ── AUTH FORMS PANEL (RIGHT) ── */}
-      <div className={styles.formSide}>
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <div className={styles.logoIcon}>
+      {/* ── LEFT: Hero Panel ── */}
+      <div className={styles.heroPanelWrap}>
+        <motion.div
+          className={styles.heroPanel}
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* Logo */}
+          <div className={styles.heroBrand}>
+            <div className={styles.heroBrandLogo}>
               <LogoIcon />
             </div>
-            <h2 className={styles.title}>
-              {mode === 'login' ? 'Welcome back' :
-                mode === 'signup' ? 'Create your workspace' :
-                  mode === 'verify-otp' ? 'Verify your email' :
-                    mode === 'forgot-password' ? 'Forgot Password' : 'Reset Password'}
-            </h2>
-            <p className={styles.subtitle}>
-              {mode === 'login' ? 'Enter your details to access your dashboard' :
-                mode === 'signup' ? 'Join high-performers tracking work today' :
-                  mode === 'forgot-password' ? 'Enter your email to reset your password' : 'Enter your new password'}
-            </p>
+            <span className={styles.heroBrandName}>TaskFlow</span>
           </div>
 
-          {/* Animated Tab Switcher (Only show on Login/Signup) */}
-          {(mode === 'login' || mode === 'signup') && (
-            <div className={styles.tabRow}>
-              <button
-                type="button"
-                className={`${styles.tabBtn} ${mode === 'login' ? styles.tabBtnActive : ''}`}
-                onClick={() => switchMode('login')}
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                className={`${styles.tabBtn} ${mode === 'signup' ? styles.tabBtnActive : ''}`}
-                onClick={() => switchMode('signup')}
-              >
-                Sign Up
-              </button>
-              <motion.div
-                className={styles.tabIndicator}
-                animate={{ x: mode === 'login' ? '0%' : '100%' }}
-                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-              />
-            </div>
-          )}
-
-          {/* Animated Form container */}
-          <AnimatePresence mode="wait">
-            <motion.form
-              key={mode}
-              className={styles.form}
-              onSubmit={handleSubmit}
-              variants={formVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
+          {/* Headline */}
+          <div className={styles.heroContent}>
+            <motion.div
+              className={styles.heroBadge}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.5 }}
             >
-              {success && (
-                <div className={styles.successMsg} style={{ color: '#10b981', padding: '0.75rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
-                  <span>✓</span> {success}
-                </div>
-              )}
+              <span className={styles.heroBadgeDot} />
+              <span>v5.0 — Now with Daily Routines</span>
+            </motion.div>
 
-              {mode === 'signup' && (
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label} htmlFor="name">Full Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    className={styles.input}
-                    placeholder="Joe Godwin"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-              )}
+            <motion.h1
+              className={styles.heroTitle}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.22, duration: 0.6 }}
+            >
+              Organize&nbsp;work.<br />
+              <span className={styles.heroTitleAccent}>Build momentum.</span>
+            </motion.h1>
 
-              {mode === 'signup' && (
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Security Question</label>
-                  <div className={styles.customSelectWrap}>
-                    <button
-                      type="button"
-                      className={styles.customSelectBtn}
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                    >
-                      <span>{securityQuestion}</span>
-                      <ChevronIcon open={dropdownOpen} />
-                    </button>
+            <motion.p
+              className={styles.heroDesc}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.32, duration: 0.6 }}
+            >
+              The premium productivity workspace for builders and high-performance teams. Tasks, habits, goals and deep focus — all in one place.
+            </motion.p>
 
-                    <AnimatePresence>
-                      {dropdownOpen && (
-                        <motion.div
-                          className={styles.customSelectDropdown}
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          {QUESTIONS.map(q => (
-                            <button
-                              key={q}
-                              type="button"
-                              className={styles.customSelectOption}
-                              onClick={() => {
-                                setSecurityQuestion(q)
-                                setDropdownOpen(false)
-                              }}
-                            >
-                              {q}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+            {/* Feature pills */}
+            <motion.div
+              className={styles.featurePills}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.42, duration: 0.6 }}
+            >
+              {['⚡ Focus Timer', '🎯 Goal Tracking', '🔥 Habit Streaks', '📊 Analytics'].map((f) => (
+                <span key={f} className={styles.featurePill}>{f}</span>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Floating app mockup */}
+          <motion.div
+            className={styles.mockupCard}
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className={styles.mockupTitleBar}>
+              <div className={styles.mockupDots}>
+                <span className={`${styles.mockupDot} ${styles.dotRed}`} />
+                <span className={`${styles.mockupDot} ${styles.dotYellow}`} />
+                <span className={`${styles.mockupDot} ${styles.dotGreen}`} />
+              </div>
+              <span className={styles.mockupTitle}>TaskFlow — My Workspace</span>
+            </div>
+
+            <div className={styles.mockupBody}>
+              {[
+                { label: 'Design system review', done: true, tag: 'Work', color: '#7c6af7' },
+                { label: 'Morning workout routine', done: true, tag: 'Health', color: '#10b981' },
+                { label: 'Read 30 pages of book', done: false, tag: 'Learning', color: '#22d3ee' },
+                { label: 'Deploy v5 to production', done: false, tag: 'Work', color: '#7c6af7' },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  className={`${styles.mockupRow} ${item.done ? styles.mockupRowDone : ''}`}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 + i * 0.09, duration: 0.4 }}
+                >
+                  <div className={`${styles.mockupCheck} ${item.done ? styles.mockupCheckDone : ''}`}>
+                    {item.done && <span>✓</span>}
                   </div>
-                </div>
-              )}
+                  <span className={styles.mockupLabel}>{item.label}</span>
+                  <span className={styles.mockupTag} style={{ color: item.color, background: item.color + '18' }}>{item.tag}</span>
+                </motion.div>
+              ))}
 
-              {mode === 'signup' && (
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label} htmlFor="securityAnswer">Security Answer</label>
-                  <input
-                    type="text"
-                    id="securityAnswer"
-                    className={styles.input}
-                    placeholder="Your answer"
-                    value={securityAnswer}
-                    onChange={(e) => setSecurityAnswer(e.target.value)}
-                    required
-                  />
+              {/* Focus timer widget in mockup */}
+              <div className={styles.mockupTimer}>
+                <div className={styles.mockupTimerIcon}>⏱</div>
+                <div className={styles.mockupTimerText}>
+                  <div className={styles.mockupTimerLabel}>Focus Session</div>
+                  <div className={styles.mockupTimerValue}>24:37</div>
                 </div>
-              )}
+                <div className={styles.mockupTimerPill}>Active</div>
+              </div>
+            </div>
+          </motion.div>
 
-              {(mode === 'login' || mode === 'signup' || mode === 'forgot-password' || mode === 'reset-password') && (
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label} htmlFor="email">Work Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    className={styles.input}
-                    placeholder="name@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              )}
+          {/* Footer */}
+          <div className={styles.heroFooter}>
+            <span className={styles.heroFooterCopy}>© 2026 TaskFlow Technologies</span>
+            <div className={styles.heroFooterStats}>
+              <div className={styles.heroStat}>
+                <span className={styles.heroStatVal}>99.9%</span>
+                <span className={styles.heroStatLbl}>Uptime</span>
+              </div>
+              <div className={styles.heroStatDivider} />
+              <div className={styles.heroStat}>
+                <span className={styles.heroStatVal}>120k+</span>
+                <span className={styles.heroStatLbl}>Users</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
 
-              {(mode === 'login' || mode === 'signup') && (
-                <div className={styles.fieldGroup}>
-                  <div className={styles.labelRow}>
-                    <label className={styles.label} htmlFor="password">Password</label>
-                    {mode === 'login' && (
-                      <a href="#forgot" className={styles.forgotLink} onClick={(e) => { e.preventDefault(); switchMode('forgot-password'); }}>
-                        Forgot?
-                      </a>
-                    )}
-                  </div>
-                  <div className={styles.inputWrap}>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      id="password"
-                      className={`${styles.input} ${styles.inputWithIcon}`}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className={styles.eyeButton}
-                      onClick={() => setShowPassword(!showPassword)}
-                      title={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                    </button>
-                  </div>
-                </div>
-              )}
+      {/* ── RIGHT: Auth Form Panel ── */}
+      <div className={styles.formSide}>
+        <motion.div
+          className={styles.formInner}
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* Mobile only logo */}
+          <div className={styles.mobileLogo}>
+            <div className={styles.mobileLogoIcon}><LogoIcon /></div>
+            <span className={styles.mobileLogoBrand}>TaskFlow</span>
+          </div>
 
-              {mode === 'reset-password' && (
-                <>
+          {/* Card */}
+          <div className={styles.card}>
+            {/* Card top shimmer line */}
+            <div className={styles.cardShimmer} />
+
+            {/* Header */}
+            <div className={styles.cardHeader}>
+              <div className={styles.logoIcon}><LogoIcon /></div>
+              <h2 className={styles.title}>{getTitle()}</h2>
+              <p className={styles.subtitle}>{getSubtitle()}</p>
+            </div>
+
+            {/* Tab Switcher */}
+            {(mode === 'login' || mode === 'signup') && (
+              <div className={styles.tabRow}>
+                <button
+                  type="button"
+                  className={`${styles.tabBtn} ${mode === 'login' ? styles.tabBtnActive : ''}`}
+                  onClick={() => switchMode('login')}
+                >
+                  Log In
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.tabBtn} ${mode === 'signup' ? styles.tabBtnActive : ''}`}
+                  onClick={() => switchMode('signup')}
+                >
+                  Sign Up
+                </button>
+                <motion.div
+                  className={styles.tabIndicator}
+                  animate={{ x: mode === 'login' ? '0%' : '100%' }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                />
+              </div>
+            )}
+
+            {/* Form */}
+            <AnimatePresence mode="wait">
+              <motion.form
+                key={mode}
+                className={styles.form}
+                onSubmit={handleSubmit}
+                variants={formVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                {success && (
+                  <motion.div
+                    className={styles.successMsg}
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <span className={styles.successIcon}>✓</span>
+                    <span>{success}</span>
+                  </motion.div>
+                )}
+
+                {mode === 'signup' && (
                   <div className={styles.fieldGroup}>
-                    <label className={styles.label}>Security Question</label>
-                    <div style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.5rem', fontSize: '0.9rem', color: 'var(--text-200)', marginBottom: '0.5rem' }}>
-                      {securityQuestion}
+                    <label className={styles.label} htmlFor="name">Full Name</label>
+                    <div className={styles.inputWrap}>
+                      <span className={styles.inputIcon}><UserIcon /></span>
+                      <input
+                        type="text"
+                        id="name"
+                        className={`${styles.input} ${styles.inputWithLeadIcon}`}
+                        placeholder="Joe Godwin"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                      />
                     </div>
                   </div>
+                )}
 
+                {mode === 'signup' && (
                   <div className={styles.fieldGroup}>
-                    <label className={styles.label} htmlFor="securityAnswer">Your Answer</label>
-                    <input
-                      type="text"
-                      id="securityAnswer"
-                      className={styles.input}
-                      placeholder="Answer"
-                      value={securityAnswer}
-                      onChange={(e) => setSecurityAnswer(e.target.value)}
-                      required
-                    />
+                    <label className={styles.label}>Security Question</label>
+                    <div className={styles.customSelectWrap}>
+                      <button
+                        type="button"
+                        className={styles.customSelectBtn}
+                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                      >
+                        <span>{securityQuestion}</span>
+                        <ChevronIcon open={dropdownOpen} />
+                      </button>
+                      <AnimatePresence>
+                        {dropdownOpen && (
+                          <motion.div
+                            className={styles.customSelectDropdown}
+                            initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                            transition={{ duration: 0.15 }}
+                          >
+                            {QUESTIONS.map(q => (
+                              <button
+                                key={q}
+                                type="button"
+                                className={styles.customSelectOption}
+                                onClick={() => {
+                                  setSecurityQuestion(q)
+                                  setDropdownOpen(false)
+                                }}
+                              >
+                                {q}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
+                )}
 
+                {mode === 'signup' && (
                   <div className={styles.fieldGroup}>
-                    <label className={styles.label} htmlFor="newPassword">New Password</label>
+                    <label className={styles.label} htmlFor="securityAnswer">Security Answer</label>
                     <div className={styles.inputWrap}>
+                      <span className={styles.inputIcon}><LockIcon /></span>
+                      <input
+                        type="text"
+                        id="securityAnswer"
+                        className={`${styles.input} ${styles.inputWithLeadIcon}`}
+                        placeholder="Your answer"
+                        value={securityAnswer}
+                        onChange={(e) => setSecurityAnswer(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {(mode === 'login' || mode === 'signup' || mode === 'forgot-password' || mode === 'reset-password') && (
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label} htmlFor="email">Work Email</label>
+                    <div className={styles.inputWrap}>
+                      <span className={styles.inputIcon}><MailIcon /></span>
+                      <input
+                        type="email"
+                        id="email"
+                        className={`${styles.input} ${styles.inputWithLeadIcon}`}
+                        placeholder="name@company.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {(mode === 'login' || mode === 'signup') && (
+                  <div className={styles.fieldGroup}>
+                    <div className={styles.labelRow}>
+                      <label className={styles.label} htmlFor="password">Password</label>
+                      {mode === 'login' && (
+                        <a href="#forgot" className={styles.forgotLink} onClick={(e) => { e.preventDefault(); switchMode('forgot-password'); }}>
+                          Forgot password?
+                        </a>
+                      )}
+                    </div>
+                    <div className={styles.inputWrap}>
+                      <span className={styles.inputIcon}><LockIcon /></span>
                       <input
                         type={showPassword ? 'text' : 'password'}
-                        id="newPassword"
-                        className={`${styles.input} ${styles.inputWithIcon}`}
+                        id="password"
+                        className={`${styles.input} ${styles.inputWithLeadIcon} ${styles.inputWithIcon}`}
                         placeholder="••••••••"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         required
                       />
                       <button
                         type="button"
                         className={styles.eyeButton}
                         onClick={() => setShowPassword(!showPassword)}
+                        title={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                       </button>
                     </div>
                   </div>
-                </>
-              )}
-
-              {mode === 'login' && (
-                <div className={styles.metaRow}>
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      className={styles.checkbox}
-                      checked={remember}
-                      onChange={(e) => setRemember(e.target.checked)}
-                    />
-                    <span>Remember this device</span>
-                  </label>
-                </div>
-              )}
-
-              {(mode === 'forgot-password' || mode === 'reset-password') && (
-                <div className={styles.metaRow} style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                  <a href="#back" className={styles.forgotLink} onClick={(e) => { e.preventDefault(); switchMode('login'); }}>
-                    ← Back to Login
-                  </a>
-                </div>
-              )}
-
-              {error && (
-                <div className={styles.errorMsg}>
-                  <span>⚠️</span> {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className={styles.ctaBtn}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className={styles.loadingSpinner} />
-                    {mode === 'login' ? 'Signing in...' :
-                      mode === 'signup' ? 'Creating Account...' :
-                        mode === 'forgot-password' ? 'Processing...' : 'Updating...'}
-                  </span>
-                ) : (
-                  <span>{
-                    mode === 'login' ? 'Continue with Email' :
-                      mode === 'signup' ? 'Create Account' :
-                        mode === 'forgot-password' ? 'Reset Password' : 'Change Password'
-                  }</span>
                 )}
-              </button>
 
-              {/* Premium explore guest button for testing and direct entry */}
-              {(mode === 'login' || mode === 'signup') && (
+                {mode === 'reset-password' && (
+                  <>
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label}>Security Question</label>
+                      <div className={styles.securityQuestionDisplay}>
+                        {securityQuestion}
+                      </div>
+                    </div>
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label} htmlFor="securityAnswer">Your Answer</label>
+                      <div className={styles.inputWrap}>
+                        <span className={styles.inputIcon}><LockIcon /></span>
+                        <input
+                          type="text"
+                          id="securityAnswer"
+                          className={`${styles.input} ${styles.inputWithLeadIcon}`}
+                          placeholder="Answer"
+                          value={securityAnswer}
+                          onChange={(e) => setSecurityAnswer(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.label} htmlFor="newPassword">New Password</label>
+                      <div className={styles.inputWrap}>
+                        <span className={styles.inputIcon}><LockIcon /></span>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          id="newPassword"
+                          className={`${styles.input} ${styles.inputWithLeadIcon} ${styles.inputWithIcon}`}
+                          placeholder="••••••••"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className={styles.eyeButton}
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {mode === 'login' && (
+                  <div className={styles.metaRow}>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        className={styles.checkbox}
+                        checked={remember}
+                        onChange={(e) => setRemember(e.target.checked)}
+                      />
+                      <span>Remember this device</span>
+                    </label>
+                  </div>
+                )}
+
+                {(mode === 'forgot-password' || mode === 'reset-password') && (
+                  <div className={styles.metaRow}>
+                    <a href="#back" className={styles.forgotLink} onClick={(e) => { e.preventDefault(); switchMode('login'); }}>
+                      ← Back to Login
+                    </a>
+                  </div>
+                )}
+
+                {error && (
+                  <motion.div
+                    className={styles.errorMsg}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <span className={styles.errorIcon}>⚠</span>
+                    <span>{error}</span>
+                  </motion.div>
+                )}
+
                 <button
-                  type="button"
-                  className={`${styles.ctaBtn} ${styles.guestBtn}`}
-                  onClick={handleGuestAccess}
+                  type="submit"
+                  className={styles.ctaBtn}
                   disabled={isLoading}
                 >
-                  <span>⚡ Explore as Guest</span>
+                  <AnimatePresence mode="wait">
+                    {isLoading ? (
+                      <motion.span
+                        key="loading"
+                        className={styles.ctaBtnContent}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <span className={styles.loadingSpinner} />
+                        {mode === 'login' ? 'Signing in…' :
+                          mode === 'signup' ? 'Creating account…' :
+                            mode === 'forgot-password' ? 'Processing…' : 'Updating…'}
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="label"
+                        className={styles.ctaBtnContent}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <span>{mode === 'login' ? 'Continue with Email' :
+                          mode === 'signup' ? 'Create Account' :
+                            mode === 'forgot-password' ? 'Reset Password' : 'Change Password'}
+                        </span>
+                        <ArrowIcon />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </button>
-              )}
-            </motion.form>
-          </AnimatePresence>
 
-        </div>
+                {(mode === 'login' || mode === 'signup') && (
+                  <>
+                    <div className={styles.divider}><span>or</span></div>
+                    <button
+                      type="button"
+                      className={styles.guestBtn}
+                      onClick={handleGuestAccess}
+                      disabled={isLoading}
+                    >
+                      <span className={styles.guestBtnIcon}>⚡</span>
+                      <span>Explore as Guest</span>
+                    </button>
+                  </>
+                )}
+              </motion.form>
+            </AnimatePresence>
+
+            {/* Privacy note */}
+            <p className={styles.privacyNote}>
+              By continuing, you agree to our <a href="#terms">Terms</a> and <a href="#privacy">Privacy Policy</a>.
+            </p>
+          </div>
+        </motion.div>
       </div>
-
     </div>
   )
 }
 
-/* ── MOCK SVGS AND SUB-COMPONENTS ── */
+/* ── SVG ICONS ── */
 
 function LogoIcon() {
   return (
-    <svg viewBox="0 0 32 32" fill="none" style={{ width: 22, height: 22 }}>
+    <svg viewBox="0 0 32 32" fill="none" style={{ width: 18, height: 18 }}>
       <path d="M9 16.5L13.5 21L23 11" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
@@ -507,7 +628,7 @@ function LogoIcon() {
 
 function EyeIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" width="16" height="16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 20 20" fill="none" width="15" height="15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M1 10s3-6 9-6 9 6 9 6-3 6-9 6-9-6-9-6z" />
       <circle cx="10" cy="10" r="3" />
     </svg>
@@ -516,9 +637,44 @@ function EyeIcon() {
 
 function EyeOffIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" width="16" height="16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 20 20" fill="none" width="15" height="15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17.94 17.94A10.07 10.07 0 0110 20c-6 0-9-6-9-6a17.93 17.93 0 013.06-4.06M9.9 4.24A9.12 9.12 0 0110 4c6 0 9 6 9 6a18 18 0 01-1.92 2.56M12.83 12.83A3 3 0 018 8l4.83 4.83z" />
       <path d="M1 1l18 18" />
+    </svg>
+  )
+}
+
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" width="15" height="15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="16" height="12" rx="2" />
+      <path d="M2 7l8 5 8-5" />
+    </svg>
+  )
+}
+
+function LockIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" width="15" height="15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="9" width="12" height="9" rx="2" />
+      <path d="M7 9V7a3 3 0 016 0v2" />
+    </svg>
+  )
+}
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" width="15" height="15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="7" r="3" />
+      <path d="M3 18c0-3.3 3.1-6 7-6s7 2.7 7 6" />
+    </svg>
+  )
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" width="14" height="14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 10h12M11 5l5 5-5 5" />
     </svg>
   )
 }
@@ -528,8 +684,8 @@ function ChevronIcon({ open }) {
     <motion.svg
       viewBox="0 0 24 24"
       fill="none"
-      width="16"
-      height="16"
+      width="15"
+      height="15"
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"

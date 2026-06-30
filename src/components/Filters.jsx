@@ -7,6 +7,8 @@ const STATUS_TABS = [
   { id: 'all',       label: 'All',       icon: '◉' },
   { id: 'active',    label: 'Active',    icon: '⚡' },
   { id: 'completed', label: 'Completed', icon: '✓' },
+  { id: 'archive',   label: 'Archive',   icon: '📦' },
+  { id: 'trash',     label: 'Trash',     icon: '🗑️' },
 ]
 const SORT_OPTIONS = [
   { id: 'createdAt', label: '⏱ Newest' },
@@ -21,6 +23,7 @@ export default function Filters({
   priorityFilter, setPriorityFilter,
   sortBy, setSortBy,
   filteredCount, onClearCompleted, completedCount,
+  onEmptyTrash, trashedCount
 }) {
   return (
     <div className={styles.wrap}>
@@ -112,7 +115,7 @@ export default function Filters({
       {/* Meta row */}
       <div className={styles.metaRow}>
         <span className={styles.countBadge}>{filteredCount} task{filteredCount !== 1 ? 's' : ''}</span>
-        {completedCount > 0 && (
+        {filter !== 'trash' && completedCount > 0 && (
           <motion.button
             id="clear-completed"
             className={styles.clearBtn}
@@ -124,6 +127,21 @@ export default function Filters({
               <path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             Clear {completedCount} completed
+          </motion.button>
+        )}
+        {filter === 'trash' && trashedCount > 0 && (
+          <motion.button
+            id="empty-trash"
+            className={`${styles.clearBtn} ${styles.dangerBtn || ''}`}
+            onClick={onEmptyTrash}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            style={{ '--c': 'var(--rose)' }}
+          >
+            <svg viewBox="0 0 16 16" fill="none" width="12" height="12">
+              <path d="M4 4l1.5 9h5l1.5-9M6 4V2h4v2M2 4h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Empty Trash ({trashedCount})
           </motion.button>
         )}
       </div>

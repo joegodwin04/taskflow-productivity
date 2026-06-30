@@ -22,7 +22,7 @@ export function useTodos(user, showToast) {
   const [todos, setTodos] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const [filter, setFilter] = useState('all')       // all | active | completed
+  const [filter, setFilter] = useState('all')       // all | active | completed | trash | archive
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -52,23 +52,39 @@ export function useTodos(user, showToast) {
 
   const addTodo = useCallback(async (data) => {
     try {
-      const newTodo = await fetchAPI('/tasks', {
-        method: 'POST',
-        body: JSON.stringify({
-          text: data.text.trim(),
-          priority: data.priority || 'medium',
-          category: data.category || 'other',
-          dueDate: data.dueDate || null,
-          notes: data.notes || '',
+      if (data.isRoutine) {
+        await fetchAPI('/routines', {
+          method: 'POST',
+          body: JSON.stringify({
+            text: data.text.trim(),
+            priority: data.priority || 'medium',
+            category: data.category || 'other',
+            scheduleType: data.scheduleType || 'daily',
+            scheduleDays: data.scheduleDays || null,
+          })
         })
-      })
-      setTodos(prev => [newTodo, ...prev])
-      if (showToast) showToast('Task added successfully', 'success')
+        // Fetch tasks again to run the sync logic and get the new routine instance
+        await fetchTodos()
+        if (showToast) showToast('Daily routine created', 'success')
+      } else {
+        const newTodo = await fetchAPI('/tasks', {
+          method: 'POST',
+          body: JSON.stringify({
+            text: data.text.trim(),
+            priority: data.priority || 'medium',
+            category: data.category || 'other',
+            dueDate: data.dueDate || null,
+            notes: data.notes || '',
+          })
+        })
+        setTodos(prev => [newTodo, ...prev])
+        if (showToast) showToast('Task added successfully', 'success')
+      }
     } catch (e) {
       console.error('Failed to add todo:', e)
-      if (showToast) showToast('Failed to add task', 'error')
+      if (showToast) showToast('Failed to add item', 'error')
     }
-  }, [showToast])
+  }, [showToast, fetchTodos])
 
   const toggleTodo = useCallback(async (id) => {
     let previousTodos = todos
@@ -97,11 +113,80 @@ export function useTodos(user, showToast) {
     setTodos(prev => prev.filter(t => t.id !== id))
     try {
       await fetchAPI(`/tasks/${id}`, { method: 'DELETE' })
-      if (showToast) showToast('Task deleted', 'success')
+      if (showToast) showToast('Task deleted permanently', 'success')
     } catch (e) {
       console.error('Failed to delete todo:', e)
       setTodos(previousTodos) // revert
       if (showToast) showToast('Failed to delete task', 'error')
+    }
+  }, [todos, showToast])
+
+  const moveToTrash = useCallback(async (id) => {
+    const previousTodos = todos
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, deletedAt: new Date().toISOString() } : t))
+    try {
+      await fetchAPI(`/tasks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ deletedAt: new Date().toISOString() })
+      })
+      if (showToast) showToast('Task moved to trash', 'success')
+    } catch (e) {
+      console.error('Failed to move to trash:', e)
+      setTodos(previousTodos) // revert
+      if (showToast) showToast('Failed to move to trash', 'error')
+    }
+  }, [todos, showToast])
+
+  const restoreTask = useCallback(async (id) => {
+    const previousTodos = todos
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, deletedAt: null } : t))
+    try {
+      await fetchAPI(`/tasks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ deletedAt: null })
+      })
+      if (showToast) showToast('Task restored successfully', 'success')
+    } catch (e) {
+      console.error('Failed to restore task:', e)
+      setTodos(previousTodos) // revert
+      if (showToast) showToast('Failed to restore task', 'error')
+    }
+  }, [todos, showToast])
+
+  const archiveTask = useCallback(async (id) => {
+    const previousTodos = todos
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, archivedAt: new Date().toISOString() } : t))
+    try {
+      await fetchAPI(`/tasks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ archivedAt: new Date().toISOString() })
+      })
+      if (showToast) showToast('Task archived', 'success')
+    } catch (e) {
+      console.error('Failed to archive task:', e)
+      setTodos(previousTodos)
+      if (showToast) showToast('Failed to archive task', 'error')
+    }
+  }, [todos, showToast])
+
+  const duplicateTask = useCallback(async (id) => {
+    const target = todos.find(t => t.id === id)
+    if (!target) return
+    try {
+      const newTodo = await fetchAPI('/tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          text: target.text + ' (Copy)',
+          priority: target.priority,
+          category: target.category,
+          notes: target.notes,
+        })
+      })
+      setTodos(prev => [newTodo, ...prev])
+      if (showToast) showToast('Task duplicated', 'success')
+    } catch (e) {
+      console.error('Failed to duplicate task:', e)
+      if (showToast) showToast('Failed to duplicate task', 'error')
     }
   }, [todos, showToast])
 
@@ -123,7 +208,7 @@ export function useTodos(user, showToast) {
 
   const clearCompleted = useCallback(async () => {
     const previousTodos = todos
-    setTodos(prev => prev.filter(t => !t.completed))
+    setTodos(prev => prev.filter(t => !t.completed || t.deletedAt))
     try {
       await fetchAPI('/tasks/completed', { method: 'DELETE' })
       if (showToast) showToast('Completed tasks cleared', 'success')
@@ -131,6 +216,19 @@ export function useTodos(user, showToast) {
       console.error('Failed to clear completed:', e)
       setTodos(previousTodos) // revert
       if (showToast) showToast('Failed to clear completed tasks', 'error')
+    }
+  }, [todos, showToast])
+
+  const emptyTrash = useCallback(async () => {
+    const previousTodos = todos
+    setTodos(prev => prev.filter(t => !t.deletedAt))
+    try {
+      await fetchAPI('/tasks/trash', { method: 'DELETE' })
+      if (showToast) showToast('Trash emptied', 'success')
+    } catch (e) {
+      console.error('Failed to empty trash:', e)
+      setTodos(previousTodos) // revert
+      if (showToast) showToast('Failed to empty trash', 'error')
     }
   }, [todos, showToast])
 
@@ -155,9 +253,18 @@ export function useTodos(user, showToast) {
       )
     }
 
-    // Status filter
-    if (filter === 'active') result = result.filter(t => !t.completed)
-    if (filter === 'completed') result = result.filter(t => t.completed)
+    // Base filter: separate active/completed from trash & archive
+    if (filter === 'trash') {
+      result = result.filter(t => t.deletedAt)
+    } else if (filter === 'archive') {
+      result = result.filter(t => t.archivedAt && !t.deletedAt)
+    } else {
+      result = result.filter(t => !t.deletedAt && !t.archivedAt)
+      
+      // Status filter (only applied if not in trash/archive)
+      if (filter === 'active') result = result.filter(t => !t.completed)
+      if (filter === 'completed') result = result.filter(t => t.completed)
+    }
 
     // Category filter
     if (categoryFilter !== 'all') result = result.filter(t => t.category === categoryFilter)
@@ -183,21 +290,39 @@ export function useTodos(user, showToast) {
   }, [todos, filter, categoryFilter, priorityFilter, searchQuery, sortBy])
 
   const stats = useMemo(() => {
-    const total = todos.length
-    const completed = todos.filter(t => t.completed).length
+    const activeTasks = todos.filter(t => !t.deletedAt && !t.archivedAt && !t.routineId)
+    const total = activeTasks.length
+    const completed = activeTasks.filter(t => t.completed).length
     const active = total - completed
-    const overdue = todos.filter(t =>
+    const overdue = activeTasks.filter(t =>
       !t.completed && t.dueDate && new Date(t.dueDate) < new Date()
     ).length
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0
     return { total, completed, active, overdue, completionRate }
   }, [todos])
 
+  const todaysRoutines = useMemo(() => {
+    const pad = (n) => n.toString().padStart(2, '0')
+    const d = new Date()
+    const todayStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    return todos.filter(t => t.routineId && t.routineDate === todayStr && !t.deletedAt && !t.archivedAt)
+  }, [todos])
+
+  const routineStats = useMemo(() => {
+    const total = todaysRoutines.length
+    const completed = todaysRoutines.filter(t => t.completed).length
+    const remaining = total - completed
+    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0
+    return { total, completed, remaining, completionRate }
+  }, [todaysRoutines])
+
   return {
     todos,
     loading,
     filteredTodos,
     stats,
+    todaysRoutines,
+    routineStats,
     filter, setFilter,
     categoryFilter, setCategoryFilter,
     priorityFilter, setPriorityFilter,
@@ -206,8 +331,13 @@ export function useTodos(user, showToast) {
     addTodo,
     toggleTodo,
     deleteTodo,
+    moveToTrash,
+    restoreTask,
+    archiveTask,
+    duplicateTask,
     updateTodo,
     clearCompleted,
+    emptyTrash,
     reorderTodo,
   }
 }

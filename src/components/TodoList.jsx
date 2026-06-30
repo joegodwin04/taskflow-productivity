@@ -7,9 +7,11 @@ const EMPTY = {
   all:       { icon: '✨', title: 'No tasks yet',      sub: 'Hit the + button to create your first task!' },
   active:    { icon: '🎉', title: "You're all caught up!", sub: 'All tasks are complete. Take a break!' },
   completed: { icon: '📭', title: 'Nothing here yet',   sub: 'Complete tasks to see them here.' },
+  trash:     { icon: '🗑️', title: 'Trash is empty',     sub: 'Deleted tasks will appear here for 30 days.' },
+  archive:   { icon: '📦', title: 'Archive is empty',   sub: 'Archived tasks will be safely stored here.' },
 }
 
-export default function TodoList({ todos, filter, loading, onToggle, onDelete, onUpdate }) {
+export default function TodoList({ todos, filter, loading, onToggle, onDelete, onUpdate, onMoveToTrash, onRestore, onArchive, onDuplicate }) {
   if (loading) {
     return (
       <div className={styles.empty} style={{ animation: 'pulse 1.5s infinite', opacity: 0.6 }}>
@@ -50,7 +52,13 @@ export default function TodoList({ todos, filter, loading, onToggle, onDelete, o
             todo={todo}
             onToggle={onToggle}
             onDelete={onDelete}
+            onMoveToTrash={onMoveToTrash}
+            onRestore={onRestore}
             onUpdate={onUpdate}
+            onArchive={onArchive}
+            onDuplicate={onDuplicate}
+            isTrashView={filter === 'trash'}
+            isArchiveView={filter === 'archive'}
           />
         ))}
       </AnimatePresence>

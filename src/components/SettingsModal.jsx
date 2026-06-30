@@ -6,6 +6,7 @@ import html2canvas from 'html2canvas'
 import styles from './SettingsModal.module.css'
 import PrintableReport from './PrintableReport'
 import { hashPassword } from '../utils/hashPassword'
+import { exportTasksToCSV } from '../utils/export'
 
 export default function SettingsModal({
   activeTab,
@@ -587,6 +588,14 @@ export default function SettingsModal({
                   ) : (
                     '⚡ Generate PDF Report'
                   )}
+                </button>
+                <button
+                  type="button"
+                  className={styles.reportCta}
+                  onClick={() => exportTasksToCSV(todos)}
+                  style={{ marginTop: '12px', background: 'var(--surface-300)', color: 'var(--text-100)' }}
+                >
+                  📊 Export Data to CSV
                 </button>
               </div>
             )}

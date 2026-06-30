@@ -1,273 +1,454 @@
-/* TodoItem.module.css — Premium task cards — Light + Dark v4 */
+/* ==========================================================================
+   TodoItem.module.css — Premium Task Cards Redesign
+   ========================================================================== */
 
 .card {
   position: relative;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
+  background: var(--bg-surface);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  margin-bottom: 10px;
+  padding: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
+  cursor: pointer;
   overflow: hidden;
-  transition: border-color 0.25s, box-shadow 0.25s;
-  cursor: default;
-  backdrop-filter: blur(16px);
-  box-shadow: var(--shadow-xs);
 }
+
+[data-theme="dark"] .card {
+  background: var(--bg-glass);
+}
+
 .card:hover {
-  border-color: var(--border-default);
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0,0,0,0.35), 
+    0 2px 8px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
-/* Shimmer top edge */
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1) 50%, transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
+[data-theme="light"] .card {
+  background: #ffffff;
+  border-color: rgba(124,106,247,0.1);
+  box-shadow: 0 2px 8px rgba(124,106,247,0.05);
 }
-.card:hover::before { opacity: 1; }
 
-.overdueCard { border-color: rgba(244,63,94,0.22) !important; }
-.overdueCard:hover { border-color: rgba(244,63,94,0.42) !important; }
+[data-theme="light"] .card:hover {
+  border-color: rgba(124,106,247,0.2);
+  box-shadow: 
+    0 8px 24px rgba(124,106,247,0.12),
+    0 2px 8px rgba(0,0,0,0.05);
+}
 
-.done { opacity: 0.48; }
-.done:hover { opacity: 0.72; }
-
-/* ── Priority colour stripe ── */
+/* ── Left colored stripe ── */
 .stripe {
   position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: var(--p, var(--violet));
-  box-shadow: 2px 0 14px color-mix(in srgb, var(--p, var(--violet)) 55%, transparent);
+  top: 0; left: 0; bottom: 0;
+  width: 3.5px;
+  background: linear-gradient(180deg, var(--p) 0%, color-mix(in srgb, var(--p) 30%, transparent) 100%);
+  opacity: 0.85;
+  transition: opacity 0.3s;
 }
 
-/* ── Main row ── */
+.done {
+  opacity: 0.55;
+}
+.done .stripe {
+  background: var(--text-500);
+}
+
 .row {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 15px 14px 20px;
-  position: relative;
+  align-items: center;
+  padding: 14px 16px 14px 20px;
+  min-height: 64px;
+  gap: 16px;
 }
 
-/* ── Checkbox ── */
+/* ── Modern Checkbox ── */
 .checkbox {
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  border: 2px solid var(--border-strong);
-  background: transparent;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-top: 1px;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.02);
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   position: relative;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-}
-.checkbox:hover {
-  border-color: var(--violet-light);
-  background: var(--violet-dim);
-  box-shadow: 0 0 12px var(--violet-glow);
-}
-.checked {
-  background: linear-gradient(135deg, #7c6af7, #a78bfa) !important;
-  border-color: transparent !important;
-  box-shadow: 0 0 18px rgba(124,106,247,0.5) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  color: white;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* ── Completion burst ── */
+.checkbox:hover {
+  border-color: var(--p);
+  background: color-mix(in srgb, var(--p) 15%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--p) 30%, transparent);
+  transform: scale(1.05);
+}
+
+.checked {
+  background: var(--p);
+  border-color: var(--p);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--p) 40%, transparent);
+}
+.checked:hover {
+  background: color-mix(in srgb, var(--p) 85%, black);
+  border-color: color-mix(in srgb, var(--p) 85%, black);
+}
+
+[data-theme="light"] .checkbox {
+  border-color: rgba(124,106,247,0.25);
+  background: rgba(124,106,247,0.02);
+  box-shadow: inset 0 2px 4px rgba(124,106,247,0.05);
+}
+[data-theme="light"] .checkbox:hover {
+  background: color-mix(in srgb, var(--p) 8%, transparent);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--p) 20%, transparent);
+}
+
 .burst {
   position: absolute;
-  inset: -3px;
+  inset: -4px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(124,106,247,0.65), transparent 70%);
+  background: var(--p);
+  z-index: 0;
   pointer-events: none;
 }
 
-/* ── Content ── */
+/* ── Text Content ── */
 .content {
   flex: 1;
-  cursor: pointer;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .text {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--text-100);
-  line-height: 1.55;
+  line-height: 1.4;
   word-break: break-word;
-  transition: color 0.2s;
+  transition: color 0.3s;
 }
-.done .text {
+.textDone {
   text-decoration: line-through;
-  text-decoration-color: var(--text-400);
+  text-decoration-color: var(--text-500);
   color: var(--text-400);
 }
 
 .editInput {
   width: 100%;
-  background: var(--bg-glass-md);
-  border: 1px solid var(--border-focus);
-  border-radius: var(--r-xs);
-  padding: 5px 10px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--p);
   color: var(--text-100);
-  font-size: 14px;
-  font-family: inherit;
-  font-weight: 500;
+  font-size: 15px;
+  padding: 8px 12px;
+  border-radius: 8px;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(124,106,247,0.10);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--p) 25%, transparent);
 }
 
 /* ── Badges ── */
 .badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 8px;
 }
 
-.catBadge, .prioBadge, .dateBadge {
+.badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 9px;
-  border-radius: var(--r-full);
-  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11.5px;
   font-weight: 600;
-  white-space: nowrap;
+  background: color-mix(in srgb, var(--badge-color) 12%, transparent);
+  color: var(--badge-color);
+  border: 1px solid color-mix(in srgb, var(--badge-color) 20%, transparent);
+  letter-spacing: 0.01em;
 }
-.catBadge {
-  background: color-mix(in srgb, var(--c) 12%, transparent);
-  color: var(--c);
-  border: 1px solid color-mix(in srgb, var(--c) 22%, transparent);
-}
-.prioBadge {
-  background: color-mix(in srgb, var(--p) 10%, transparent);
-  color: var(--p);
-  border: 1px solid color-mix(in srgb, var(--p) 20%, transparent);
-}
-.dateBadge  { background: rgba(255,255,255,0.04); color: var(--text-300); border: 1px solid var(--border-subtle); }
-.overdueBadge { background: var(--rose-dim); color: var(--rose); border-color: rgba(244,63,94,0.28); }
-.todayBadge   { background: var(--amber-dim); color: var(--amber); border-color: rgba(245,158,11,0.28); }
 
-/* ── Actions (appear on hover) ── */
-.actions {
+.dateBadge { --badge-color: var(--text-300); }
+.todayBadge { --badge-color: var(--amber); background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); }
+.overdueBadge { --badge-color: var(--rose); background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.2); }
+.missedBadge { --badge-color: var(--rose); background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.2); }
+.routineBadge { --badge-color: var(--violet); background: rgba(124,106,247,0.1); border-color: rgba(124,106,247,0.2); }
+
+/* ── Premium Hover Action Bar ── */
+.actionBar {
   display: flex;
-  gap: 5px;
-  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  background: rgba(20, 18, 40, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
   opacity: 0;
-  transition: opacity 0.2s;
+  transform: translateX(10px) scale(0.95);
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: absolute;
+  right: 16px;
 }
-.card:hover .actions { opacity: 1; }
-/* Always show on touch devices */
-@media (hover: none) {
-  .actions { opacity: 1; }
+.card:hover .actionBar {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+}
+
+[data-theme="light"] .actionBar {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(124,106,247,0.15);
+  box-shadow: 0 8px 24px rgba(124,106,247,0.15);
 }
 
 .actionBtn {
-  width: 30px;
-  height: 30px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-glass);
+  background: transparent;
+  border: none;
   color: var(--text-300);
-  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 .actionBtn:hover {
-  color: var(--text-200);
-  background: var(--bg-glass-md);
-  border-color: var(--border-default);
-}
-.delBtn { color: var(--rose) !important; border-color: rgba(244,63,94,0.22) !important; }
-.delBtn:hover { color: var(--rose) !important; background: var(--rose-dim); box-shadow: 0 0 10px var(--rose-glow); }
-
-/* ── Expanded panel ── */
-.expandInner {
-  border-top: 1px solid var(--border-subtle);
-  padding: 13px 20px;
-  background: rgba(0,0,0,0.18);
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-}
-.notesRow { display: flex; gap: 8px; align-items: flex-start; }
-.notesIcon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
-.notesText { font-size: 12.5px; color: var(--text-300); line-height: 1.55; }
-.completedAt { font-size: 11px; color: var(--emerald); }
-
-.inlineRow { display: flex; align-items: center; gap: 10px; }
-.inlineLabel { font-size: 11px; color: var(--text-400); font-weight: 600; white-space: nowrap; }
-.inlineDate {
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-xs);
-  padding: 5px 10px;
-  color: var(--text-200);
-  font-size: 12px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
-  cursor: pointer;
-}
-.inlineDate::-webkit-calendar-picker-indicator { cursor: pointer; }
-.inlineDate:focus { border-color: var(--border-focus); }
-
-/* ============================================================
-   LIGHT MODE OVERRIDES
-   ============================================================ */
-[data-theme="light"] .card {
-  background: rgba(255, 255, 255, 0.88);
-  border-color: rgba(124, 106, 247, 0.13);
-  box-shadow: 0 1px 6px rgba(124,106,247,0.08), 0 1px 2px rgba(0,0,0,0.04);
-}
-[data-theme="light"] .card:hover {
-  border-color: rgba(124, 106, 247, 0.24);
-  box-shadow: 0 4px 18px rgba(124,106,247,0.12), 0 1px 4px rgba(0,0,0,0.05);
-}
-[data-theme="light"] .overdueCard {
-  border-color: rgba(244,63,94,0.22) !important;
-  background: rgba(255, 248, 248, 0.90);
-}
-[data-theme="light"] .expandInner {
-  background: rgba(248, 247, 255, 0.80);
-  border-top-color: rgba(124, 106, 247, 0.12);
-}
-[data-theme="light"] .actionBtn {
-  background: rgba(255, 255, 255, 0.90);
-  border-color: rgba(124, 106, 247, 0.14);
+  background: rgba(255,255,255,0.08);
+  color: var(--text-100);
 }
 [data-theme="light"] .actionBtn:hover {
-  background: rgba(124, 106, 247, 0.07);
-  border-color: rgba(124, 106, 247, 0.26);
+  background: rgba(124,106,247,0.08);
+  color: #1a1830;
 }
-[data-theme="light"] .delBtn:hover {
-  background: rgba(244, 63, 94, 0.08) !important;
+
+/* ── Expanded Panel ── */
+.expandPanel {
+  background: rgba(0,0,0,0.15);
+  border-top: 1px solid rgba(255,255,255,0.04);
 }
-[data-theme="light"] .dateBadge {
-  background: rgba(124, 106, 247, 0.07);
-  border-color: rgba(124, 106, 247, 0.16);
+[data-theme="light"] .expandPanel {
+  background: rgba(124,106,247,0.02);
+  border-top-color: rgba(124,106,247,0.08);
+}
+
+.expandInner {
+  padding: 16px 16px 16px 58px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notesRow {
+  display: flex;
+  gap: 8px;
+  font-size: 13.5px;
   color: var(--text-300);
+  line-height: 1.6;
+  background: rgba(255,255,255,0.02);
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
-[data-theme="light"] .inlineDate {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(124, 106, 247, 0.16);
+[data-theme="light"] .notesRow {
+  background: #ffffff;
+  border-color: rgba(124,106,247,0.1);
   color: var(--text-200);
 }
-[data-theme="light"] .inlineDate::-webkit-calendar-picker-indicator {
-  filter: none; opacity: 0.6;
+.notesIcon { flex-shrink: 0; }
+
+.completedAt {
+  font-size: 12px;
+  color: var(--emerald);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(16,185,129,0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(16,185,129,0.2);
+  width: fit-content;
 }
-[data-theme="light"] .editInput {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: var(--border-focus);
+
+.inlineRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.inlineLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.inlineDate {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
   color: var(--text-100);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  outline: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.inlineDate:focus {
+  border-color: var(--p);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--p) 20%, transparent);
+}
+[data-theme="light"] .inlineDate {
+  background: #ffffff;
+  border-color: rgba(124,106,247,0.15);
+  color: #1a1830;
+}
+
+/* ── Centralized Modal ── */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modalContent {
+  background: var(--bg-glass);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="light"] .modalContent {
+  background: #ffffff;
+  border-color: rgba(124,106,247,0.15);
+  box-shadow: 0 24px 48px rgba(124,106,247,0.2);
+}
+
+.modalHeader {
+  padding: 24px 24px 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.modalIconWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(244, 63, 94, 0.12);
+  color: var(--rose);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  box-shadow: 0 8px 16px rgba(244, 63, 94, 0.15);
+}
+.modalHeader h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-100);
+  letter-spacing: -0.02em;
+}
+
+.modalBody {
+  padding: 18px 24px 24px;
+}
+.modalTaskText {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-200);
+  margin: 0 0 14px 0;
+  padding: 14px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
+  font-style: italic;
+}
+[data-theme="light"] .modalTaskText {
+  background: rgba(124,106,247,0.04);
+  border-color: rgba(124,106,247,0.1);
+  color: #1a1830;
+}
+.modalWarning {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-300);
+  line-height: 1.5;
+}
+
+.modalActions {
+  padding: 18px 24px;
+  background: rgba(0,0,0,0.15);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+[data-theme="light"] .modalActions {
+  background: rgba(124,106,247,0.02);
+  border-top-color: rgba(124,106,247,0.08);
+}
+
+.modalBtnCancel, .modalBtnDelete {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-family: inherit;
+}
+.modalBtnCancel {
+  background: transparent;
+  color: var(--text-300);
+}
+.modalBtnCancel:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-100);
+}
+[data-theme="light"] .modalBtnCancel {
+  color: #6561a0;
+}
+[data-theme="light"] .modalBtnCancel:hover {
+  background: rgba(124,106,247,0.06);
+  color: #1a1830;
+}
+
+.modalBtnDelete {
+  background: var(--rose);
+  color: white;
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.35);
+}
+.modalBtnDelete:hover {
+  background: #fb7185;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.45);
+}
+.modalBtnDelete:active {
+  transform: translateY(0);
 }

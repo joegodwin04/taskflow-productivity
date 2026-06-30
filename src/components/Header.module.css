@@ -10,9 +10,11 @@
 .inner {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 24px;
-  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 24px;
+  height: 60px;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 /* Left */
@@ -138,7 +140,7 @@
   justify-content: center;
   transition: background 0.2s, color 0.2s;
 }
-.notifBtn:hover { background: var(--bg-glass-md); color: var(--text-100); }
+.notifBtn:hover { background: var(--bg-glass-md); color: var(--text-100); border-color: var(--border-default); }
 .notifDot {
   position: absolute;
   top: 7px;
@@ -179,3 +181,47 @@
   .progressPill { display: none; }
   .searchWrap { min-width: 0; flex: 1; }
 }
+@media (max-width: 480px) {
+  .inner { padding: 0 14px; gap: 8px; }
+  .notifBtn { display: none; }
+}
+
+/* ── Light mode ── */
+[data-theme="light"] .header {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom-color: var(--border-default);
+  box-shadow: 0 1px 0 rgba(15,14,42,0.04), 0 2px 8px rgba(15,14,42,0.04);
+}
+[data-theme="light"] .menuBtn,
+[data-theme="light"] .notifBtn {
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+  color: var(--text-300);
+}
+[data-theme="light"] .menuBtn:hover,
+[data-theme="light"] .notifBtn:hover {
+  background: var(--bg-form);
+  border-color: var(--border-strong);
+  color: var(--text-200);
+}
+[data-theme="light"] .pageTitleText {
+  background: linear-gradient(135deg, var(--text-100) 0%, var(--violet) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+[data-theme="light"] .searchInput {
+  background: var(--bg-base);
+  border-color: var(--border-default);
+  color: var(--text-100);
+}
+[data-theme="light"] .searchFocused .searchInput {
+  background: var(--bg-elevated);
+  border-color: var(--border-focus);
+}
+[data-theme="light"] .progressPill {
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+}
+[data-theme="light"] .progressPillBar { background: var(--border-default); }
+[data-theme="light"] .notifDot { border-color: #ffffff; }

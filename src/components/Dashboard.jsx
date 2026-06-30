@@ -9,10 +9,10 @@ import ActivityTimeline from './ActivityTimeline'
 import AnalyticsChart from './AnalyticsChart'
 import styles from './Dashboard.module.css'
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } }
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
 const item = {
-  hidden: { opacity: 0, y: 20 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16,1,0.3,1] } }
+  hidden: { opacity: 0, y: 18 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.16,1,0.3,1] } }
 }
 
 function useCountUp(target, ms = 1100) {
@@ -98,7 +98,7 @@ function getGreeting() {
   return { text: 'Working late', emoji: '🌙' }
 }
 
-const Dashboard = memo(function Dashboard({ stats, todos, onNavigate, user, loading }) {
+const Dashboard = memo(function Dashboard({ stats, todos, todaysRoutines = [], routineStats = { total: 0, completed: 0, remaining: 0, completionRate: 0 }, onNavigate, user, loading, toggleTodo }) {
   const userName = user?.name ? user.name.split(' ')[0] : 'Builder'
   const greeting = getGreeting()
   const recentTodos = [...todos].sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5)
@@ -129,7 +129,7 @@ const Dashboard = memo(function Dashboard({ stats, todos, onNavigate, user, load
             animate={{ y: [0,-8,0] }}
             transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }}
           >{greeting.emoji}</motion.div>
-          <div>
+          <div className={styles.heroTextWrap}>
             <h1 className={styles.heroTitle}>{greeting.text}, {userName}!</h1>
             <p className={styles.heroSub}>
               {stats.active === 0 && stats.total === 0
@@ -149,6 +149,38 @@ const Dashboard = memo(function Dashboard({ stats, todos, onNavigate, user, load
           </button>
         </div>
       </motion.div>
+
+      {/* ── Row 1.5: Today's Routine ── */}
+      {routineStats.total > 0 && (
+        <motion.div className={styles.routinesWidget} variants={item} whileHover={{ y: -2 }}>
+          <div className={styles.routinesHeader}>
+            <div>
+              <h2 className={styles.routinesTitle}>Today's Routine</h2>
+              <p className={styles.routinesSub}>{routineStats.completed} of {routineStats.total} completed</p>
+            </div>
+            <div className={styles.routineProgress}>
+              <div className={styles.routinePct}>{routineStats.completionRate}%</div>
+              <div className={styles.routineTrack}>
+                <motion.div className={styles.routineFill} 
+                  initial={{ width: 0 }} 
+                  animate={{ width: `${routineStats.completionRate}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className={styles.routinesList}>
+            {todaysRoutines.map(routine => (
+              <div key={routine.id} className={`${styles.routineItem} ${routine.completed ? styles.routineDone : ''}`} onClick={() => toggleTodo && toggleTodo(routine.id)}>
+                <div className={styles.routineCheckbox}>
+                  {routine.completed && <svg viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>}
+                </div>
+                <span className={styles.routineText}>{routine.text}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Row 2: Stats cards ── */}
       <div className={styles.statsGrid}>

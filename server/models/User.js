@@ -85,25 +85,31 @@ const User = sequelize.define('User', {
   hooks: {
     beforeCreate: async (user) => {
       if (user.password) {
-        const salt = await bcrypt.genSalt(12)
+        const salt = await bcrypt.genSalt(10)
         user.password = await bcrypt.hash(user.password, salt)
       }
       if (user.securityAnswer) {
-        const salt = await bcrypt.genSalt(12)
+        const salt = await bcrypt.genSalt(10)
         user.securityAnswer = await bcrypt.hash(user.securityAnswer.toLowerCase().trim(), salt)
       }
     },
     beforeUpdate: async (user) => {
       if (user.changed('password')) {
-        const salt = await bcrypt.genSalt(12)
+        const salt = await bcrypt.genSalt(10)
         user.password = await bcrypt.hash(user.password, salt)
       }
       if (user.changed('securityAnswer')) {
-        const salt = await bcrypt.genSalt(12)
+        const salt = await bcrypt.genSalt(10)
         user.securityAnswer = await bcrypt.hash(user.securityAnswer.toLowerCase().trim(), salt)
       }
     }
-  }
+  },
+  indexes: [
+    {
+      unique: true,
+      fields: ['email']
+    }
+  ]
 })
 
 // Compare entered password with stored bcrypt hash

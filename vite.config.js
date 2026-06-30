@@ -13,13 +13,6 @@ export default defineConfig({
     },
   },
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
-          framer: ['framer-motion'],
-        },
-      },
-    },
+    // Rolldown handles chunking automatically
   },
 })

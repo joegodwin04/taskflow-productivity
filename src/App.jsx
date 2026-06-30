@@ -15,6 +15,7 @@ import { useTodos } from './hooks/useTodos'
 import { useTheme } from './context/ThemeContext'
 import Auth from './components/Auth'
 import SettingsModal from './components/SettingsModal'
+import { fetchAPI } from './utils/api'
 import styles from './App.module.css'
 
 const VIEW_META = {
@@ -41,32 +42,77 @@ export default function App() {
   }, [])
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('tf_user')
+      const saved = localStorage.getItem('tf_user') || sessionStorage.getItem('tf_user')
       if (saved) {
         const parsed = JSON.parse(saved)
-        // Strip password from session for security (migration from older versions)
         const { password, ...safeUser } = parsed
-        if (password !== undefined) {
-          localStorage.setItem('tf_user', JSON.stringify(safeUser))
-        }
         return safeUser
       }
-    } catch { /* ignore malformed localStorage data */ }
+    } catch { /* ignore malformed storage data */ }
     return null
   })
+  
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
+
+  // Validate session against the backend on load
+  useEffect(() => {
+    const validateSession = async () => {
+      const token = localStorage.getItem('tf_token') || sessionStorage.getItem('tf_token')
+      if (!token) {
+        setIsAuthLoading(false)
+        return
+      }
+
+      try {
+        const data = await fetchAPI('/auth/me')
+        setUser(data.user)
+        // Update local cache based on where they logged in
+        if (localStorage.getItem('tf_token')) {
+          localStorage.setItem('tf_user', JSON.stringify(data.user))
+        } else {
+          sessionStorage.setItem('tf_user', JSON.stringify(data.user))
+        }
+      } catch (err) {
+        // Validation failed (expired, tampered, deleted)
+        setUser(null)
+        localStorage.removeItem('tf_token')
+        sessionStorage.removeItem('tf_token')
+        localStorage.removeItem('tf_user')
+        sessionStorage.removeItem('tf_user')
+      } finally {
+        setIsAuthLoading(false)
+      }
+    }
+
+    validateSession()
+  }, [])
 
   // Sync theme context with current user identity
   useEffect(() => {
     setUserId(user?.id || null)
   }, [user?.id, setUserId])
 
-  const handleLoginSuccess = useCallback((userData) => {
+  const handleLoginSuccess = useCallback((userData, remember = true) => {
     // Remove password field before storing in React state / localStorage
     const safeUser = { ...userData }
     delete safeUser.password
     setUser(safeUser)
-    localStorage.setItem('tf_user', JSON.stringify(safeUser))
+    if (remember) {
+      localStorage.setItem('tf_user', JSON.stringify(safeUser))
+    } else {
+      sessionStorage.setItem('tf_user', JSON.stringify(safeUser))
+    }
   }, [])
+
+  const {
+    todos, filteredTodos, stats, todaysRoutines, routineStats, loading: todosLoading,
+    filter, setFilter,
+    categoryFilter, setCategoryFilter,
+    priorityFilter, setPriorityFilter,
+    searchQuery, setSearchQuery,
+    sortBy, setSortBy,
+    addTodo, toggleTodo, deleteTodo, moveToTrash, restoreTask, archiveTask, duplicateTask, updateTodo, clearCompleted, emptyTrash,
+  } = useTodos(user, showToast)
 
   const handleLogout = useCallback(() => {
     if (user && user.id && user.id.startsWith('guest_')) {
@@ -95,17 +141,18 @@ export default function App() {
     localStorage.setItem('tf_user', '') // Clear cleanly
     localStorage.removeItem('tf_user')
     localStorage.removeItem('tf_token')
+    sessionStorage.removeItem('tf_user')
+    sessionStorage.removeItem('tf_token')
   }, [user])
 
-  const {
-    todos, filteredTodos, stats, loading: todosLoading,
-    filter, setFilter,
-    categoryFilter, setCategoryFilter,
-    priorityFilter, setPriorityFilter,
-    searchQuery, setSearchQuery,
-    sortBy, setSortBy,
-    addTodo, toggleTodo, deleteTodo, updateTodo, clearCompleted,
-  } = useTodos(user, showToast)
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      handleLogout()
+      showToast('Session expired. Please log in again.', 'error')
+    }
+    window.addEventListener('auth:expired', handleAuthExpired)
+    return () => window.removeEventListener('auth:expired', handleAuthExpired)
+  }, [handleLogout, showToast])
 
   // Compute pomoSessions from stable user identity — depends on [user] for React Compiler compatibility
   const pomoSessions = useMemo(() => {
@@ -132,6 +179,17 @@ export default function App() {
     initial: { opacity: 0, y: 18 },
     animate: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } },
     exit:    { opacity: 0, y: -12, transition: { duration: 0.2 } },
+  }
+
+  if (isAuthLoading) {
+    return (
+      <div className={styles.shell} data-theme={theme} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <div className={styles.loadingSpinner} style={{ width: 32, height: 32, borderTopColor: 'var(--primary)' }} />
+          <span style={{ color: 'var(--text-300)', fontSize: '0.9rem' }}>Verifying session...</span>
+        </motion.div>
+      </div>
+    )
   }
 
   if (!user) {
@@ -353,7 +411,7 @@ export default function App() {
           <AnimatePresence mode="wait">
             {view === 'dashboard' && (
               <motion.div key="dashboard" {...pageVariants}>
-                <Dashboard stats={stats} todos={todos} onNavigate={handleSetView} user={user} loading={todosLoading} />
+                <Dashboard stats={stats} todos={todos} todaysRoutines={todaysRoutines} routineStats={routineStats} toggleTodo={toggleTodo} onNavigate={handleSetView} user={user} loading={todosLoading} />
               </motion.div>
             )}
 
@@ -369,12 +427,16 @@ export default function App() {
                     sortBy={sortBy} setSortBy={setSortBy}
                     filteredCount={filteredTodos.length}
                     completedCount={stats.completed}
+                    trashedCount={todos.filter(t => t.deletedAt).length}
                     onClearCompleted={clearCompleted}
+                    onEmptyTrash={emptyTrash}
                   />
                 </section>
                 <section className={styles.section}>
                   <TodoList todos={filteredTodos} filter={filter} loading={todosLoading}
-                    onToggle={toggleTodo} onDelete={deleteTodo} onUpdate={updateTodo} />
+                    onToggle={toggleTodo} onDelete={deleteTodo} onUpdate={updateTodo}
+                    onMoveToTrash={moveToTrash} onRestore={restoreTask}
+                    onArchive={archiveTask} onDuplicate={duplicateTask} />
                 </section>
               </motion.div>
             )}
@@ -437,13 +499,13 @@ export default function App() {
 
             {view === 'analytics' && (
                <motion.div key="analytics" className={styles.singleView} {...pageVariants}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 8 }}>
-                   <div>
-                     <h2 className={styles.pageTitle}>📈 Analytics</h2>
+                 <div className={styles.analyticsPageHeader}>
+                   <div className={styles.analyticsPageLeft}>
+                     <h2 className={styles.pageTitle}>Analytics</h2>
                      <p className={styles.pageSub}>Insights into your productivity patterns over time.</p>
                    </div>
-                   <button 
-                     className={styles.reportHeaderBtn} 
+                   <button
+                     className={styles.reportHeaderBtn}
                      onClick={() => setActiveSettingsTab('reports')}
                      title="Export productivity as PDF"
                    >
@@ -456,6 +518,7 @@ export default function App() {
                 </div>
               </motion.div>
             )}
+
           </AnimatePresence>
         </div>
 

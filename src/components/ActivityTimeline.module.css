@@ -1,92 +1,152 @@
-/* ActivityTimeline.module.css — Light + Dark v4 */
+/* ==========================================================================
+   ActivityTimeline.module.css — Premium v6
+   ========================================================================== */
 
 .wrap {
+  position: relative;
   background: var(--bg-glass);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-lg);
-  padding: clamp(16px, 2.5vw, 22px);
-  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px;
+  padding: 22px 20px;
+  backdrop-filter: blur(24px);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   overflow: hidden;
-  position: relative;
-  box-shadow: var(--shadow-xs);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    var(--shadow-xs);
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
+
+/* Shimmer top edge */
 .wrap::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
 }
 
-.header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.title { font-size: 14px; font-weight: 800; color: var(--text-200); letter-spacing: -0.01em; }
+.wrap:hover {
+  border-color: rgba(255,255,255,0.11);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.08) inset,
+    var(--shadow-md),
+    0 16px 48px rgba(0,0,0,0.22);
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-200);
+  letter-spacing: -0.01em;
+}
+
 .badge {
-  font-size: 10px; font-weight: 700;
+  font-size: 10px;
+  font-weight: 700;
   padding: 3px 10px;
-  border-radius: var(--r-full);
-  background: var(--violet-dim);
+  border-radius: 100px;
+  background: rgba(124,106,247,0.12);
   color: var(--violet-light);
-  border: 1px solid rgba(124,106,247,0.2);
+  border: 1px solid rgba(124,106,247,0.22);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   white-space: nowrap;
 }
 
-.list { display: flex; flex-direction: column; gap: 0; }
+/* ── Event list ── */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
 
 .item {
   display: grid;
-  grid-template-columns: 26px 1px 1fr;
-  gap: 0 10px;
+  grid-template-columns: 28px 1px 1fr;
+  gap: 0 11px;
   align-items: start;
   position: relative;
-  padding-bottom: 12px;
+  padding-bottom: 14px;
+  transition: opacity 0.2s;
 }
+
+/* Dim all items when any is hovered */
+.list:hover .item:not(:hover) {
+  opacity: 0.55;
+}
+
 .item:last-child { padding-bottom: 0; }
 .item:last-child .line { display: none; }
 
+/* ── Dot icon ── */
 .dot {
-  width: 26px; height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 11px;
   font-weight: 800;
   flex-shrink: 0;
   z-index: 1;
-  transition: transform 0.2s;
-}
-.item:hover .dot { transform: scale(1.1); }
-.dotCreated {
-  background: rgba(124,106,247,0.15);
-  color: var(--violet-light);
-  border: 1px solid rgba(124,106,247,0.3);
-}
-.dotDone {
-  background: rgba(16,185,129,0.15);
-  color: var(--emerald);
-  border: 1px solid rgba(16,185,129,0.3);
+  transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s;
 }
 
+.item:hover .dot {
+  transform: scale(1.15);
+  box-shadow: 0 0 16px currentColor;
+}
+
+.dotCreated {
+  background: rgba(124,106,247,0.14);
+  color: var(--violet-light);
+  border: 1.5px solid rgba(124,106,247,0.32);
+}
+
+.dotDone {
+  background: rgba(16,185,129,0.14);
+  color: var(--emerald);
+  border: 1.5px solid rgba(16,185,129,0.32);
+}
+
+/* ── Connector line ── */
 .line {
   width: 1px;
-  background: var(--border-subtle);
+  background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
   height: 100%;
   margin: 0 auto;
+  margin-top: 4px;
 }
 
+/* ── Event body ── */
 .body {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding-top: 3px;
+  gap: 4px;
+  padding-top: 4px;
   min-width: 0;
 }
+
 .action {
-  font-size: 10px; color: var(--text-400); font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.06em;
+  font-size: 9.5px;
+  color: var(--text-400);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
+
 .taskText {
   font-size: 12.5px;
   color: var(--text-200);
@@ -94,37 +154,94 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.4;
+  transition: color 0.2s;
 }
-.meta { display: flex; align-items: center; gap: 8px; font-size: 10.5px; flex-wrap: wrap; }
-.time { color: var(--text-400); }
+
+.item:hover .taskText { color: var(--text-100); }
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  flex-wrap: wrap;
+}
+
+.time {
+  color: var(--text-400);
+  font-weight: 500;
+}
 
 /* ── Empty ── */
 .empty {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 8px; padding: 28px 16px; text-align: center;
-  color: var(--text-400); font-size: 13px; line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-400);
+  font-size: 13px;
+  line-height: 1.6;
 }
-.empty span { font-size: 32px; display: block; margin-bottom: 4px; }
 
-/* ============================================================
-   LIGHT MODE OVERRIDES
-   ============================================================ */
+.empty span {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 4px;
+  opacity: 0.6;
+}
+
+/* ==========================================================================
+   LIGHT MODE
+   ========================================================================== */
 [data-theme="light"] .wrap {
-  background: rgba(255, 255, 255, 0.90);
-  border-color: rgba(124, 106, 247, 0.14);
-  box-shadow: 0 2px 12px rgba(124,106,247,0.09), 0 1px 3px rgba(0,0,0,0.04);
+  background: #ffffff;
+  border-color: rgba(124,106,247,0.1);
+  box-shadow:
+    0 2px 12px rgba(124,106,247,0.07),
+    0 1px 3px rgba(0,0,0,0.04);
+  backdrop-filter: none;
 }
+
 [data-theme="light"] .wrap::before {
-  background: linear-gradient(90deg, transparent, rgba(124,106,247,0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(124,106,247,0.1), transparent);
 }
+
+[data-theme="light"] .wrap:hover {
+  border-color: rgba(124,106,247,0.2);
+  box-shadow:
+    0 8px 28px rgba(124,106,247,0.12),
+    0 2px 8px rgba(0,0,0,0.04);
+}
+
+[data-theme="light"] .title { color: #0f0e2a; }
+
+[data-theme="light"] .badge {
+  background: rgba(124,106,247,0.08);
+  border-color: rgba(124,106,247,0.2);
+  color: #7c6af7;
+}
+
 [data-theme="light"] .dotCreated {
-  background: rgba(124,106,247,0.10);
+  background: rgba(124,106,247,0.08);
   border-color: rgba(124,106,247,0.25);
+  color: #7c6af7;
 }
+
 [data-theme="light"] .dotDone {
-  background: rgba(16,185,129,0.10);
+  background: rgba(16,185,129,0.08);
   border-color: rgba(16,185,129,0.25);
+  color: #10b981;
 }
+
 [data-theme="light"] .line {
-  background: rgba(124, 106, 247, 0.12);
+  background: linear-gradient(180deg, rgba(124,106,247,0.15), rgba(124,106,247,0.05));
 }
+
+[data-theme="light"] .action { color: #9490c8; }
+[data-theme="light"] .taskText { color: #1a1830; }
+[data-theme="light"] .item:hover .taskText { color: #0f0e2a; }
+[data-theme="light"] .time { color: #9490c8; }
+[data-theme="light"] .empty { color: #9490c8; }

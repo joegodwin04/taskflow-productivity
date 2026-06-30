@@ -132,8 +132,8 @@ router.post('/signup', async (req, res) => {
     if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({ message: error.errors.map(e => e.message).join(', ') })
     }
-    console.error('Signup error:', error.stack || error)
-    res.status(500).json({ message: 'Server error during signup.', details: error.message })
+    console.error('Signup error:', error.message)
+    res.status(500).json({ message: 'Server error during signup.' })
   }
 })
 
@@ -164,8 +164,8 @@ router.post('/login', async (req, res) => {
       user: user.toSafeObject(),
     })
   } catch (error) {
-    console.error('Login error:', error.stack || error)
-    res.status(500).json({ message: 'Server error during login.', details: error.message })
+    console.error('Login error:', error.message)
+    res.status(500).json({ message: 'Server error during login.' })
   }
 })
 
@@ -185,8 +185,8 @@ router.post('/forgot-password/step1', async (req, res) => {
 
     res.json({ securityQuestion: user.securityQuestion || 'What was the name of your first pet?' })
   } catch (error) {
-    console.error('Forgot password step 1 error:', error.stack || error)
-    res.status(500).json({ message: 'Server error.', details: error.message })
+    console.error('Forgot password step 1 error:', error.message)
+    res.status(500).json({ message: 'Server error.' })
   }
 })
 
@@ -219,8 +219,8 @@ router.post('/forgot-password/step2', async (req, res) => {
 
     res.json({ message: 'Password reset successfully. You can now log in.' })
   } catch (error) {
-    console.error('Forgot password step 2 error:', error.stack || error)
-    res.status(500).json({ message: 'Server error.', details: error.message })
+    console.error('Forgot password step 2 error:', error.message)
+    res.status(500).json({ message: 'Server error.' })
   }
 })
 
