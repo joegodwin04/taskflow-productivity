@@ -11,6 +11,7 @@ import GoalTracker from './components/GoalTracker'
 import PomodoroTimer from './components/PomodoroTimer'
 import AnalyticsChart from './components/AnalyticsChart'
 import ActivityTimeline from './components/ActivityTimeline'
+import RoutineList from './components/RoutineList'
 import { useTodos } from './hooks/useTodos'
 import { useTheme } from './context/ThemeContext'
 import Auth from './components/Auth'
@@ -105,7 +106,7 @@ export default function App() {
   }, [])
 
   const {
-    todos, filteredTodos, stats, todaysRoutines, routineStats, loading: todosLoading,
+    todos, filteredTodos, groupedRoutines, stats, todaysRoutines, routineStats, loading: todosLoading,
     filter, setFilter,
     categoryFilter, setCategoryFilter,
     priorityFilter, setPriorityFilter,
@@ -433,11 +434,18 @@ export default function App() {
                   />
                 </section>
                 <section className={styles.section}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>Today's Tasks</h3>
                   <TodoList todos={filteredTodos} filter={filter} loading={todosLoading}
                     onToggle={toggleTodo} onDelete={deleteTodo} onUpdate={updateTodo}
                     onMoveToTrash={moveToTrash} onRestore={restoreTask}
                     onArchive={archiveTask} onDuplicate={duplicateTask} />
                 </section>
+                {filter !== 'trash' && filter !== 'archive' && (
+                  <section className={styles.section} style={{ marginTop: '32px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-400)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>Daily Routines</h3>
+                    <RoutineList routines={groupedRoutines} loading={todosLoading} onToggle={toggleTodo} />
+                  </section>
+                )}
               </motion.div>
             )}
 

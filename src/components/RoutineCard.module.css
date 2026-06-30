@@ -1,0 +1,246 @@
+/* ==========================================================================
+   RoutineCard.module.css — Premium Daily Routine Cards
+   ========================================================================== */
+
+.card {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  padding: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .card {
+  background: var(--bg-glass);
+}
+
+.card:hover {
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0,0,0,0.35), 
+    0 2px 8px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+[data-theme="light"] .card {
+  background: #ffffff;
+  border-color: rgba(124,106,247,0.1);
+  box-shadow: 0 2px 8px rgba(124,106,247,0.05);
+}
+
+[data-theme="light"] .card:hover {
+  border-color: rgba(124,106,247,0.2);
+  box-shadow: 
+    0 8px 24px rgba(124,106,247,0.12),
+    0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* ── Left colored stripe ── */
+.stripe {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--violet) 0%, color-mix(in srgb, var(--violet) 30%, transparent) 100%);
+  opacity: 0.9;
+  transition: opacity 0.3s;
+}
+
+.done {
+  opacity: 0.7;
+}
+.done .stripe {
+  background: var(--emerald);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px 16px 24px;
+  min-height: 72px;
+  gap: 18px;
+}
+
+/* ── Modern Checkbox ── */
+.checkbox {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  color: white;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.checkbox:hover {
+  border-color: var(--emerald);
+  background: color-mix(in srgb, var(--emerald) 15%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--emerald) 30%, transparent);
+  transform: scale(1.05);
+}
+
+.checked {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--emerald) 40%, transparent);
+}
+.checked:hover {
+  background: color-mix(in srgb, var(--emerald) 85%, black);
+  border-color: color-mix(in srgb, var(--emerald) 85%, black);
+}
+
+[data-theme="light"] .checkbox {
+  border-color: rgba(124,106,247,0.25);
+  background: rgba(124,106,247,0.02);
+  box-shadow: inset 0 2px 4px rgba(124,106,247,0.05);
+}
+[data-theme="light"] .checkbox:hover {
+  background: color-mix(in srgb, var(--emerald) 8%, transparent);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--emerald) 20%, transparent);
+}
+
+.burst {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--emerald);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Text Content ── */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-100);
+  line-height: 1.4;
+  word-break: break-word;
+  transition: color 0.3s;
+}
+.textDone {
+  text-decoration: line-through;
+  text-decoration-color: var(--text-400);
+  color: var(--text-300);
+}
+
+/* ── Badges & Meta ── */
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--badge-color) 12%, transparent);
+  color: var(--badge-color);
+  border: 1px solid color-mix(in srgb, var(--badge-color) 20%, transparent);
+  letter-spacing: 0.01em;
+}
+
+.streakBadge { --badge-color: var(--amber); }
+.scheduleBadge { --badge-color: var(--violet); }
+.resetBadge { --badge-color: var(--cyan); background: transparent; border: none; padding: 0; opacity: 0.7; }
+.catBadge { --badge-color: var(--text-300); background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1); }
+
+/* ── Expanded History Panel ── */
+.expandPanel {
+  background: rgba(0,0,0,0.15);
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+[data-theme="light"] .expandPanel {
+  background: rgba(124,106,247,0.02);
+  border-top-color: rgba(124,106,247,0.08);
+}
+
+.expandInner {
+  padding: 20px 20px 20px 70px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.historyTitle {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-400);
+  margin-bottom: 4px;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-200);
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+[data-theme="light"] .historyItem {
+  background: #ffffff;
+  border-color: rgba(124,106,247,0.1);
+  color: #1a1830;
+}
+
+.historyItem.completed {
+  border-left: 3px solid var(--emerald);
+}
+.historyItem.missed {
+  border-left: 3px solid var(--rose);
+}
+
+.historyIcon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.historyIcon.completed { color: var(--emerald); }
+.historyIcon.missed { color: var(--rose); }
+
+.historyDate {
+  font-weight: 500;
+}

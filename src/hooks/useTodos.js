@@ -242,7 +242,7 @@ export function useTodos(user, showToast) {
   }, [])
 
   const filteredTodos = useMemo(() => {
-    let result = [...todos]
+    let result = todos.filter(t => !t.routineId)
 
     // Search
     if (searchQuery.trim()) {
@@ -316,10 +316,72 @@ export function useTodos(user, showToast) {
     return { total, completed, remaining, completionRate }
   }, [todaysRoutines])
 
+  const groupedRoutines = useMemo(() => {
+    const allRoutineTasks = todos.filter(t => t.routineId && !t.deletedAt && !t.archivedAt)
+    
+    const groups = {}
+    allRoutineTasks.forEach(t => {
+      if (!groups[t.routineId]) {
+        groups[t.routineId] = {
+          routineId: t.routineId,
+          text: t.text,
+          priority: t.priority,
+          category: t.category,
+          instances: [],
+          createdAt: t.createdAt,
+        }
+      }
+      groups[t.routineId].instances.push(t)
+    })
+    
+    const pad = (n) => n.toString().padStart(2, '0')
+    const d = new Date()
+    const todayStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    
+    return Object.values(groups).map(group => {
+      group.instances.sort((a, b) => {
+        if (a.routineDate !== b.routineDate) {
+          return new Date(b.routineDate) - new Date(a.routineDate)
+        }
+        return new Date(b.createdAt) - new Date(a.createdAt)
+      })
+      
+      const todaysInstance = group.instances.find(t => t.routineDate === todayStr)
+      
+      let streak = 0
+      let currentDate = new Date()
+      
+      if (!todaysInstance?.completed) {
+        currentDate.setDate(currentDate.getDate() - 1)
+      }
+      
+      let streakActive = true
+      for (let i = 0; i < 365 && streakActive; i++) {
+        const dStr = `${currentDate.getFullYear()}-${pad(currentDate.getMonth() + 1)}-${pad(currentDate.getDate())}`
+        const inst = group.instances.find(t => t.routineDate === dStr)
+        
+        if (inst && inst.completed) {
+          streak++
+          currentDate.setDate(currentDate.getDate() - 1)
+        } else {
+          streakActive = false
+        }
+      }
+      
+      return {
+        ...group,
+        todaysInstance,
+        streak,
+        completedToday: !!todaysInstance?.completed,
+      }
+    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  }, [todos])
+
   return {
     todos,
     loading,
     filteredTodos,
+    groupedRoutines,
     stats,
     todaysRoutines,
     routineStats,
