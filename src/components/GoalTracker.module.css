@@ -113,3 +113,20 @@
 [data-theme="light"] .track { background: var(--border-subtle); }
 [data-theme="light"] .minusBtn, [data-theme="light"] .plusBtn { background: var(--bg-form); border-color: var(--border-default); }
 [data-theme="light"] .delBtn:hover { background: rgba(244,63,94,0.08); }
+
+/* ============================================================
+   RESPONSIVE MOBILE OVERRIDES
+   ============================================================ */
+@media (max-width: 480px) {
+  .wrap { padding: 16px 12px; }
+  .formInner { padding: 14px; }
+  .formRow { flex-direction: column; }
+  .card { padding: 14px; gap: 10px; }
+  .cardTop { gap: 10px; }
+  .cardIcon { width: 34px; height: 34px; font-size: 16px; }
+  .cardTitle { font-size: 13px; }
+  .cardMeta { font-size: 10px; }
+  .pctBadge { font-size: 12px; }
+  .minusBtn, .plusBtn { width: 34px; height: 34px; }
+  .progressLabel { font-size: 10px; }
+}

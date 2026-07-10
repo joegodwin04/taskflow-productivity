@@ -182,8 +182,12 @@
   .searchWrap { min-width: 0; flex: 1; }
 }
 @media (max-width: 480px) {
-  .inner { padding: 0 14px; gap: 8px; }
+  .inner { padding: 0 10px; gap: 6px; }
   .notifBtn { display: none; }
+  .menuBtn { width: 32px; height: 32px; }
+  .avatar { width: 32px; height: 32px; font-size: 11px; }
+  .pageTitleIcon { font-size: 16px; }
+  .pageTitleText { font-size: 16px; }
 }
 
 /* ── Light mode ── */

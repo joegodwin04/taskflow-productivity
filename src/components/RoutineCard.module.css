@@ -177,6 +177,23 @@
 .catBadge { --badge-color: var(--text-300); background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1); }
 
 /* ── Expanded History Panel ── */
+.deleteBtn:hover {
+  background: rgba(244,63,94,0.1);
+  color: var(--rose);
+}
+
+/* ============================================================
+   RESPONSIVE MOBILE OVERRIDES
+   ============================================================ */
+@media (max-width: 480px) {
+  .row { padding: 12px 14px; min-height: 60px; gap: 12px; }
+  .checkbox { width: 26px; height: 26px; border-radius: 7px; }
+  .text { font-size: 14px; }
+  .metaRow { gap: 6px; }
+  .badge { font-size: 10px; padding: 3px 8px; }
+  .expandInner { padding: 16px 14px; }
+}
+
 .expandPanel {
   background: rgba(0,0,0,0.15);
   border-top: 1px solid rgba(255,255,255,0.04);

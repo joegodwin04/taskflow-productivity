@@ -166,8 +166,17 @@
   .dayLabel { width: 26px; font-size: 8.5px; } .daydot { width: 26px; height: 24px; } .streakCol { width: 40px; } .streakBadge { width: 40px; }
 }
 @media (max-width: 480px) {
-  .grid { overflow-x: auto; } .habitRow { overflow-x: auto; }
-  .daysRow { grid-template-columns: repeat(7, 24px); gap: 2px; }
-  .dayDots { grid-template-columns: repeat(7, 24px); gap: 2px; }
-  .daydot { width: 24px; height: 22px; font-size: 9px; }
+  .wrap { padding: 16px 12px; }
+  .grid { overflow-x: visible; }
+  .habitRow { overflow-x: visible; padding: 10px 0; }
+  .daysRow { grid-template-columns: repeat(7, 22px); gap: 2px; }
+  .dayDots { grid-template-columns: repeat(7, 22px); gap: 2px; }
+  .daydot { width: 22px; height: 26px; font-size: 10px; min-height: 26px; }
+  .dayLabel { width: 22px; font-size: 8px; }
+  .streakCol { width: 34px; font-size: 12px; }
+  .streakBadge { width: 34px; height: 24px; }
+  .habitLabel { font-size: 12px; }
+  .header { flex-direction: column; align-items: flex-start; }
+  .headerRight { width: 100%; justify-content: space-between; margin-top: 4px; }
+  .deleteBtn { opacity: 1; padding: 6px; }
 }

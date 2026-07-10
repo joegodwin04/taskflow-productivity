@@ -644,9 +644,11 @@
   .breadcrumbText { max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
 }
 @media (max-width: 480px) {
-  .content { padding: 12px; }
-  .topbar { gap: 6px; }
-  .avatar { width: 32px; height: 32px; font-size: 10px; }
+  .content { padding: 12px 10px; }
+  .topbar { gap: 6px; padding: 0 10px; height: 52px; }
+  .avatar { width: 30px; height: 30px; font-size: 10px; }
+  .pageTitle { font-size: 22px; }
+  .pageSub { font-size: 12px; }
 }
 
 /* Toast Alerts & Printable PDF Header Actions */

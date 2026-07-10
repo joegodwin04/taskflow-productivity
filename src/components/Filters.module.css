@@ -230,8 +230,15 @@
    ============================================================ */
 @media (max-width: 640px) {
   .wrap { padding: 16px 18px; }
-  .tabRow { width: 100%; }
+  .tabRow { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .tab { flex-shrink: 0; padding: 7px 16px; }
   .secondRow { flex-direction: column; align-items: flex-start; }
-  .rightControls { flex-wrap: wrap; }
+  .rightControls { flex-wrap: wrap; width: 100%; justify-content: space-between; }
+}
+@media (max-width: 480px) {
+  .wrap { padding: 14px 12px; gap: 12px; }
+  .chip { padding: 6px 10px; font-size: 11.5px; }
+  .sortWrap { width: 100%; justify-content: space-between; }
+  .prioDots { width: 100%; justify-content: space-between; }
+  .clearBtn { width: 100%; justify-content: center; }
 }

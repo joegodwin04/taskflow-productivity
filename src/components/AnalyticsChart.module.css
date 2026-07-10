@@ -827,3 +827,18 @@
 
 [data-theme="light"] .emptyTitle { color: #1a1830; }
 [data-theme="light"] .emptyText { color: #6561a0; }
+
+/* ============================================================
+   RESPONSIVE MOBILE OVERRIDES
+   ============================================================ */
+@media (max-width: 480px) {
+  .wrap { padding: 20px 16px; gap: 20px; }
+  .header { flex-direction: column; gap: 14px; }
+  .headerStats { width: 100%; justify-content: space-around; padding: 12px; }
+  .metricValue { font-size: 34px; }
+  .legend { padding: 10px 12px; }
+  .chartOuter { height: 200px; }
+  .gridLabel { width: 24px; font-size: 9px; }
+  .barsRow { left: 30px; }
+  .insightBar { grid-template-columns: 1fr; }
+}

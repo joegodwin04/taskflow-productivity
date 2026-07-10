@@ -452,3 +452,30 @@
 .modalBtnDelete:active {
   transform: translateY(0);
 }
+
+/* ============================================================
+   RESPONSIVE MOBILE OVERRIDES
+   ============================================================ */
+@media (max-width: 480px) {
+  .row { padding: 12px 14px 44px 14px; align-items: flex-start; gap: 12px; min-height: auto; }
+  .checkbox { width: 24px; height: 24px; border-radius: 7px; margin-top: 2px; }
+  .text { font-size: 14px; }
+  .badges { margin-bottom: 4px; }
+  .actionBar { 
+    position: absolute; 
+    bottom: 10px; 
+    right: 14px; 
+    opacity: 1; 
+    transform: none; 
+    pointer-events: auto; 
+    background: transparent; 
+    border: none; 
+    box-shadow: none; 
+    padding: 0; 
+  }
+  .expandInner { padding: 12px 14px 12px 14px; }
+  .actionBtn { width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+  .notesRow { flex-direction: column; gap: 4px; padding: 10px; }
+  .inlineRow { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .inlineDate { width: 100%; }
+}

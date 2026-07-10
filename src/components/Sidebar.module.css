@@ -355,3 +355,11 @@
   .sidebar { width: 260px !important; }
   .sidebarCollapsed { transform: translateX(-100%) !important; }
 }
+@media (max-width: 480px) {
+  .sidebar { width: 85vw !important; max-width: 300px; }
+  .navItem { min-height: 48px; padding: 12px 14px; font-size: 14px; }
+  .navSection { font-size: 10px; padding: 16px 14px 8px; }
+  .userRow { min-height: 60px; padding: 14px; }
+  .brand { padding: 20px 14px; }
+  .themeBtn { min-height: 52px; padding: 14px; }
+}

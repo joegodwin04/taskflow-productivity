@@ -391,3 +391,15 @@
   background: rgba(124,106,247,0.04);
   color: #1a1830;
 }
+
+/* ============================================================
+   RESPONSIVE MOBILE OVERRIDES
+   ============================================================ */
+@media (max-width: 480px) {
+  .inputRow { padding: 12px 14px; }
+  .options { padding: 16px 14px; gap: 16px; }
+  .priorityBtns, .categoryBtns { flex-wrap: wrap; }
+  .row2 { flex-direction: column; gap: 12px; }
+  .actions { flex-direction: column-reverse; gap: 10px; margin-top: 12px; }
+  .cancelBtn, .addBtn { width: 100%; justify-content: center; }
+}
