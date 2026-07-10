@@ -245,7 +245,7 @@
 }
 
 .expandInner {
-  padding: 16px 16px 16px 58px;
+  padding: 16px 16px 16px 60px;
   display: flex;
   flex-direction: column;
   gap: 12px;

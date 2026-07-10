@@ -217,8 +217,8 @@
   transition: all 0.2s;
 }
 .schedBtn.active {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: var(--violet);
+  border-color: var(--violet);
   color: white;
   box-shadow: 0 4px 12px rgba(124,106,247,0.3);
 }
@@ -242,8 +242,8 @@
   transition: all 0.2s;
 }
 .dayBtn.active {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: var(--violet);
+  border-color: var(--violet);
   color: white;
   box-shadow: 0 4px 12px rgba(124,106,247,0.3);
   transform: scale(1.05);
