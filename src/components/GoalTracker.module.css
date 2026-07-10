@@ -118,7 +118,7 @@
    RESPONSIVE MOBILE OVERRIDES
    ============================================================ */
 @media (max-width: 480px) {
-  .wrap { padding: 16px 12px; }
+  .wrap { padding: 18px 16px; gap: 16px; }
   .formInner { padding: 14px; }
   .formRow { flex-direction: column; }
   .card { padding: 14px; gap: 10px; }

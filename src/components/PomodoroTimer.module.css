@@ -562,7 +562,7 @@
    RESPONSIVE MOBILE OVERRIDES
    ============================================================ */
 @media (max-width: 480px) {
-  .wrap { padding: 16px 14px; gap: 16px; }
+  .wrap { padding: 18px 16px; gap: 16px; }
   .time { font-size: 32px; }
   .controls { flex-wrap: wrap; gap: 10px; }
   .playBtn { flex: 1; min-width: 140px; height: 48px; }

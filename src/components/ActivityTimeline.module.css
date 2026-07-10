@@ -245,3 +245,13 @@
 [data-theme="light"] .item:hover .taskText { color: #0f0e2a; }
 [data-theme="light"] .time { color: #9490c8; }
 [data-theme="light"] .empty { color: #9490c8; }
+
+/* ==========================================================================
+   RESPONSIVE OVERRIDES
+   ========================================================================== */
+@media (max-width: 480px) {
+  .wrap {
+    padding: 18px 16px;
+    gap: 16px;
+  }
+}

@@ -166,7 +166,7 @@
   .dayLabel { width: 26px; font-size: 8.5px; } .daydot { width: 26px; height: 24px; } .streakCol { width: 40px; } .streakBadge { width: 40px; }
 }
 @media (max-width: 480px) {
-  .wrap { padding: 16px 12px; }
+  .wrap { padding: 18px 16px; }
   .grid { overflow-x: visible; }
   .habitRow { overflow-x: visible; padding: 10px 0; }
   .daysRow { grid-template-columns: repeat(7, 22px); gap: 2px; }

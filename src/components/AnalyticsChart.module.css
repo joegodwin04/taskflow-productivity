@@ -832,7 +832,7 @@
    RESPONSIVE MOBILE OVERRIDES
    ============================================================ */
 @media (max-width: 480px) {
-  .wrap { padding: 20px 16px; gap: 20px; }
+  .wrap { padding: 18px 16px; gap: 16px; }
   .header { flex-direction: column; gap: 14px; }
   .headerStats { width: 100%; justify-content: space-around; padding: 12px; }
   .metricValue { font-size: 34px; }
