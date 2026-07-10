@@ -457,24 +457,107 @@
    RESPONSIVE MOBILE OVERRIDES
    ============================================================ */
 @media (max-width: 480px) {
-  .row { padding: 12px 14px 44px 14px; align-items: flex-start; gap: 12px; min-height: auto; }
-  .checkbox { width: 24px; height: 24px; border-radius: 7px; margin-top: 2px; }
-  .text { font-size: 14px; }
-  .badges { margin-bottom: 4px; }
-  .actionBar { 
-    position: absolute; 
-    bottom: 10px; 
-    right: 14px; 
-    opacity: 1; 
-    transform: none; 
-    pointer-events: auto; 
-    background: transparent; 
-    border: none; 
-    box-shadow: none; 
-    padding: 0; 
+  .card { margin-bottom: 8px; }
+
+  /*
+   * LAYOUT STRATEGY — two-line card
+   * Line 1: [checkbox flex-shrink:0]  [content flex:1  — title + badges]
+   * Line 2: [action buttons — right-aligned, full width via flex-basis:100%]
+   *
+   * Achieved by making the row flex-wrap:wrap.
+   * The .actionBar gets flex-basis:100% so it always wraps to its own row.
+   * The checkbox and .content naturally share the first line.
+   */
+  .row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 12px 14px 0 14px;
+    gap: 10px;
+    min-height: auto;
   }
-  .expandInner { padding: 12px 14px 12px 14px; }
-  .actionBtn { width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+
+  /* Checkbox: keep visible and correctly aligned next to the title */
+  .checkbox {
+    flex-shrink: 0;
+    margin-top: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+  }
+
+  /* Content block: takes all remaining width on line 1 */
+  .content {
+    flex: 1;
+    min-width: 0;
+    gap: 5px;
+  }
+
+  .text {
+    font-size: 14.5px;
+    line-height: 1.45;
+  }
+
+  .badges {
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  /*
+   * Action bar wraps to its own dedicated row.
+   * flex-basis:100% forces it onto a new line.
+   * Separator top-border provides visual hierarchy.
+   */
+  .actionBar {
+    position: static !important;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto;
+    flex-basis: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 6px 0 10px 0;
+    margin-top: 0;
+  }
+
+  [data-theme="light"] .actionBar {
+    border-top-color: rgba(124,106,247,0.1);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Always-visible on mobile — override the desktop hover-reveal */
+  .card:hover .actionBar {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Comfortable 40×40 touch targets */
+  .actionBtn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  [data-theme="light"] .actionBtn {
+    background: rgba(124,106,247,0.04);
+    border-color: rgba(124,106,247,0.1);
+  }
+
+  /* Expanded details panel */
+  .expandInner { padding: 12px 14px; }
   .notesRow { flex-direction: column; gap: 4px; padding: 10px; }
   .inlineRow { flex-direction: column; align-items: flex-start; gap: 8px; }
   .inlineDate { width: 100%; }

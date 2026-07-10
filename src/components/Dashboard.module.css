@@ -892,21 +892,37 @@
 }
 
 @media (max-width: 480px) {
-  .statsGrid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .hero { flex-direction: column; align-items: flex-start; gap: 16px; padding: 20px 16px; }
-  .heroRight { width: 100%; justify-content: stretch; }
+  /* Dashboard shell — consistent gaps between every widget row */
+  .dashboard { gap: 16px; padding-bottom: 24px; }
+
+  /* Stats grid: 2-column, equal-sized cards */
+  .statsGrid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  /* Hero banner — stack vertically, full-width CTA */
+  .hero { flex-direction: column; align-items: flex-start; gap: 14px; padding: 18px 16px; }
+  .heroRight { width: 100%; }
   .heroCta { width: 100%; text-align: center; justify-content: center; }
   .dateChip { width: 100%; justify-content: center; }
-  .statCard { padding: 12px 10px; }
+
+  /* Stat cards — tighter but still padded */
+  .statCard { padding: 14px 12px; }
   .statCardInner { gap: 8px; flex-direction: column; align-items: flex-start; }
-  .statIcon { width: 32px; height: 32px; font-size: 16px; }
-  .statValue { font-size: 24px; }
-  .dashboard { gap: 12px; }
-  .widget { padding: 16px 14px; gap: 14px; }
-  .routinesWidget { padding: 16px 14px; }
+  .statIcon { width: 34px; height: 34px; font-size: 17px; }
+  .statValue { font-size: 26px; }
+
+  /* Widgets (Completion, Activity, etc.) — consistent inner padding */
+  .widget { padding: 18px 16px; gap: 16px; }
+  .routinesWidget { padding: 18px 16px; }
   .routinesList { grid-template-columns: 1fr; }
+
+  /* Completion ring */
   .ringWrap { width: 110px; height: 110px; }
-  .ringPct { font-size: 22px; }
-  .ringStats { gap: 10px; }
-  .rsVal { font-size: 16px; }
+  .ringPct  { font-size: 22px; }
+  .ringStats { gap: 12px; }
+  .rsVal    { font-size: 17px; }
+
+  /* Widget titles / header rows */
+  .widgetTitle { font-size: 13px; }
+  .widgetBadge { font-size: 10px; }
 }
+
