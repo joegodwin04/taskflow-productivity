@@ -1,6 +1,6 @@
 // routines.js — CRUD routes for daily routines
 import { Router } from 'express'
-import { Routine, Task } from '../models/index.js'
+import { Routine } from '../models/index.js'
 import protect from '../middleware/auth.js'
 
 const router = Router()

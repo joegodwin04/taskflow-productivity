@@ -5,7 +5,6 @@ dotenv.config() // Load env vars before anything else
 import express from 'express'
 import cors from 'cors'
 import { connectDB } from './config/db.js'
-import { sequelize } from './models/index.js'
 import { migrator } from './config/umzug.js'
 
 // Import route files

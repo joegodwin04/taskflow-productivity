@@ -3,7 +3,6 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 import { User, Task, Habit, Goal, PomodoroSession } from '../models/index.js'
 import protect from '../middleware/auth.js'
-import { sendOTP } from '../utils/email.js'
 
 const router = Router()
 
@@ -13,9 +12,6 @@ const generateToken = (id, remember = false) => {
     expiresIn: remember ? '30d' : '7d',
   })
 }
-
-// Generate a random 6-digit OTP
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 // Seed default workspace data for a new user
 const seedWorkspaceForUser = async (userId, isDemo = false) => {

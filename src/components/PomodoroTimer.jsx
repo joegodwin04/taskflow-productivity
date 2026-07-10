@@ -187,17 +187,27 @@ export default function PomodoroTimer({ compact = false, user, showToast }) {
       {/* Sessions & Analytics */}
       <div className={styles.sessions}>
         <div className={styles.sessionDots}>
-          {Array.from({ length: Math.max(sessions, 4) }).map((_, i) => (
-            <motion.div
-              key={i}
-              className={`${styles.dot} ${i < sessions ? styles.dotFilled : ''}`}
-              style={i < sessions ? { background: meta.color, boxShadow: `0 0 12px ${meta.glow}` } : {}}
-              initial={false}
-              animate={i < sessions ? { scale: [1, 1.2, 1] } : { scale: 1 }}
-              transition={{ duration: 0.4 }}
-            />
-          ))}
+          {/* Fixed 4-dot Pomodoro cycle indicator */}
+          {Array.from({ length: 4 }).map((_, i) => {
+            const filledCount = sessions % 4 === 0 && sessions > 0 ? 4 : sessions % 4
+            const isFilled = i < filledCount
+            return (
+              <motion.div
+                key={i}
+                className={`${styles.dot} ${isFilled ? styles.dotFilled : ''}`}
+                style={isFilled ? { background: meta.color, boxShadow: `0 0 10px ${meta.glow}` } : {}}
+                initial={false}
+                animate={isFilled ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+                transition={{ duration: 0.35 }}
+              />
+            )
+          })}
+          {/* Cycle counter — shows which Pomodoro cycle the user is on */}
+          {sessions >= 4 && (
+            <span className={styles.cycleBadge}>×{Math.ceil(sessions / 4)}</span>
+          )}
         </div>
+
         
         <div className={styles.analyticsRow}>
           <div className={styles.totalTimeBadge}>

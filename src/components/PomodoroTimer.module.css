@@ -264,6 +264,7 @@
 
 .sessionDots {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
@@ -273,12 +274,25 @@
   border-radius: 50%;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.1);
-  transition: background 0.3s, border-color 0.3s;
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
 .dotFilled {
   border-color: transparent;
 }
+
+.cycleBadge {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-400);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 1px 7px;
+  margin-left: 2px;
+  letter-spacing: 0.02em;
+}
+
 
 .analyticsRow {
   width: 100%;

@@ -46,8 +46,8 @@ export default function App() {
       const saved = localStorage.getItem('tf_user') || sessionStorage.getItem('tf_user')
       if (saved) {
         const parsed = JSON.parse(saved)
-        const { password, ...safeUser } = parsed
-        return safeUser
+        delete parsed.password
+        return parsed
       }
     } catch { /* ignore malformed storage data */ }
     return null
@@ -73,7 +73,7 @@ export default function App() {
         } else {
           sessionStorage.setItem('tf_user', JSON.stringify(data.user))
         }
-      } catch (err) {
+      } catch {
         // Validation failed (expired, tampered, deleted)
         setUser(null)
         localStorage.removeItem('tf_token')
@@ -144,6 +144,7 @@ export default function App() {
     localStorage.removeItem('tf_token')
     sessionStorage.removeItem('tf_user')
     sessionStorage.removeItem('tf_token')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   useEffect(() => {

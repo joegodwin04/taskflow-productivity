@@ -138,6 +138,7 @@ export function usePomodoro(user, showToast) {
       
       completeSession()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.timeLeft, state.running, state.mode, sessions, showToast])
 
   const toggle = useCallback(() => {
@@ -148,6 +149,7 @@ export function usePomodoro(user, showToast) {
       saveStateToStorage(nextState)
       return nextState
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey])
 
   const reset = useCallback(() => {
@@ -156,12 +158,14 @@ export function usePomodoro(user, showToast) {
       saveStateToStorage(nextState)
       return nextState
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey])
 
   const switchMode = useCallback((m) => {
     const nextState = { mode: m, running: false, endTime: null, timeLeft: MODE_TIMES[m] }
     setState(nextState)
     saveStateToStorage(nextState)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey])
 
   const finishAndSave = useCallback(async () => {
@@ -204,6 +208,7 @@ export function usePomodoro(user, showToast) {
       console.error('Failed to save manual session:', e)
       if (showToast) showToast('Failed to save session', 'error')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, showToast])
 
   const totalSecs = MODE_TIMES[state.mode]

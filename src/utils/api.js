@@ -39,7 +39,7 @@ export const fetchAPI = async (endpoint, options = {}) => {
   } catch (error) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      throw new Error('Request timed out. Please check your connection and try again.');
+      throw new Error('Request timed out. Please check your connection and try again.', { cause: error });
     }
     throw error;
   }
