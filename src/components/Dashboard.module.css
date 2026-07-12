@@ -916,9 +916,12 @@
   .routinesList { grid-template-columns: 1fr; }
 
   /* Completion ring */
-  .ringWrap { width: 110px; height: 110px; }
-  .ringPct  { font-size: 22px; }
-  .ringStats { gap: 12px; }
+  .ringContainer { width: 100%; align-items: center; justify-content: center; display: flex; flex-direction: column; }
+  .ringWrap { width: 110px; height: 110px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+  .ringWrap svg { width: 110px; height: 110px; }
+  .ringCenter { transform: scale(0.85); } /* Scale down the text center to match */
+  .ringPct  { font-size: 22px; text-align: center; }
+  .ringStats { gap: 16px; width: 100%; justify-content: center; margin-top: 8px; }
   .rsVal    { font-size: 17px; }
 
   /* Widget titles / header rows */
