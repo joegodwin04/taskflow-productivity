@@ -53,16 +53,16 @@ TaskFlow is a premium SaaS productivity platform built with React + Vite, design
 
 ---
 
-## 🛠 Tech Stack
+## 🛠️ Tech Stack
 
-- React
-- Vite
-- JavaScript
-- CSS Modules
-- Firebase Authentication
-- jsPDF
-- html2canvas
-- Responsive UI Design
+- React.js
+- Node.js
+- Express.js
+- Sequelize ORM
+- PostgreSQL (Neon)
+- Vercel (Frontend)
+- Render (Backend)
+- JWT Authentication
 
 ---
 
