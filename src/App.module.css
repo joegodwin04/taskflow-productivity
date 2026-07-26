@@ -42,8 +42,8 @@
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px;
   padding: 0 clamp(16px, 2.5vw, 28px);
-  height: 60px;
-  background: rgba(5, 5, 16, 0.82);
+  height: 58px;
+  background: rgba(5, 5, 16, 0.85);
   backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
@@ -67,10 +67,10 @@
 }
 
 .breadcrumb { display: flex; align-items: center; gap: 6px; }
-.breadcrumbIcon { font-size: 14px; opacity: 0.5; }
+.breadcrumbIcon { font-size: 13px; opacity: 0.45; }
 .breadcrumbText {
-  font-size: 14px; font-weight: 700;
-  color: var(--text-200); letter-spacing: -0.01em;
+  font-size: 13.5px; font-weight: 700;
+  color: var(--text-200); letter-spacing: -0.02em;
   white-space: nowrap;
 }
 
@@ -128,15 +128,15 @@
 .progWrap { display: flex; align-items: center; gap: 8px; min-width: 110px; }
 .progLabel { font-size: 11px; font-weight: 700; color: var(--violet-light); white-space: nowrap; min-width: 30px; }
 .progTrack {
-  flex: 1; height: 4px;
-  background: rgba(255,255,255,0.08);
+  flex: 1; height: 5px;
+  background: rgba(255,255,255,0.07);
   border-radius: var(--r-full); overflow: hidden;
 }
 .progFill {
   height: 100%;
   background: var(--grad-violet);
   border-radius: var(--r-full);
-  box-shadow: 0 0 8px var(--violet-glow);
+  box-shadow: 0 0 6px var(--violet-glow);
 }
 
 /* Buttons */
@@ -170,8 +170,8 @@
 }
 .notifHeader {
   padding: 12px 16px;
-  font-size: 11px; font-weight: 700; color: var(--text-300);
-  text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 10.5px; font-weight: 700; color: var(--text-400);
+  text-transform: uppercase; letter-spacing: 0.1em;
   border-bottom: 1px solid var(--border-subtle);
 }
 .notifItem {
@@ -195,12 +195,12 @@
   background: var(--grad-violet);
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 800; color: white; flex-shrink: 0;
-  box-shadow: 0 0 14px var(--violet-glow);
-  border: 2px solid rgba(167,139,250,0.35);
+  box-shadow: 0 0 12px var(--violet-glow);
+  border: 1.5px solid rgba(167,139,250,0.4);
   cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
   position: relative;
 }
-.avatar:hover { transform: scale(1.04); box-shadow: 0 0 22px var(--violet-glow); }
+.avatar:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--violet-glow); }
 
 .avatarStatus {
   position: absolute;
@@ -223,18 +223,18 @@
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
-  width: 290px;
+  width: 288px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--r-xl);
-  padding: 14px;
+  padding: 12px;
   box-shadow: var(--shadow-lg), var(--shadow-glow);
   z-index: 100;
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   animation: fadeInScale 0.28s var(--ease-out) both;
 }
 
@@ -411,7 +411,7 @@
 :global([data-theme="light"]) .profileMenu {
   background: #ffffff;
   border-color: #d8d4ef;
-  box-shadow: 0 12px 40px rgba(124, 106, 247, 0.08), var(--shadow-lg);
+  box-shadow: 0 12px 40px rgba(124, 106, 247, 0.10), var(--shadow-lg);
 }
 :global([data-theme="light"]) .menuStats {
   background: #f8f7fe;
@@ -522,9 +522,10 @@
 /* Footer */
 .footer {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 14px clamp(16px, 2.5vw, 28px);
+  padding: 12px clamp(16px, 2.5vw, 28px);
   border-top: 1px solid var(--border-subtle);
   font-size: 11px; color: var(--text-400); flex-shrink: 0;
+  letter-spacing: 0.01em;
 }
 .fDot { opacity: 0.35; }
 .fVer { color: var(--violet-light); font-weight: 700; }
@@ -540,11 +541,11 @@
 
 /* ── Topbar — frosted white glass ── */
 [data-theme="light"] .topbar {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   border-bottom: 1px solid var(--border-default);
-  box-shadow: 0 1px 0 rgba(15,14,42,0.04), 0 2px 8px rgba(15,14,42,0.04);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 rgba(15,14,42,0.03), 0 2px 12px rgba(15,14,42,0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 [data-theme="light"] .breadcrumbText { color: var(--text-100); font-weight: 700; }
 

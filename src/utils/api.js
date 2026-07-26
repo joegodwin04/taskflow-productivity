@@ -2,7 +2,8 @@ export const API_BASE_URL =
   import.meta.env.VITE_API_URL || '';
 
 export const fetchAPI = async (endpoint, options = {}) => {
-  const token = localStorage.getItem('tf_token') || sessionStorage.getItem('tf_token');
+  // Token lives in sessionStorage only — tab-scoped, never persists across app opens.
+  const token = sessionStorage.getItem('tf_token');
 
   const headers = {
     'Content-Type': 'application/json',

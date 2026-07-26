@@ -41,51 +41,18 @@ export default function App() {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
   }, [])
-  const [user, setUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('tf_user') || sessionStorage.getItem('tf_user')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        delete parsed.password
-        return parsed
-      }
-    } catch { /* ignore malformed storage data */ }
-    return null
-  })
+  // Always start with null — users must explicitly log in every session.
+  // We never restore a previously authenticated user from storage on app load.
+  const [user, setUser] = useState(null)
   
-  const [isAuthLoading, setIsAuthLoading] = useState(true)
+  const [isAuthLoading, setIsAuthLoading] = useState(false)
 
-  // Validate session against the backend on load
+  // On startup: clear any stale session data from the previous visit.
+  // sessionStorage is tab-scoped so this only affects the current tab,
+  // preventing multi-tab token corruption.
   useEffect(() => {
-    const validateSession = async () => {
-      const token = localStorage.getItem('tf_token') || sessionStorage.getItem('tf_token')
-      if (!token) {
-        setIsAuthLoading(false)
-        return
-      }
-
-      try {
-        const data = await fetchAPI('/auth/me')
-        setUser(data.user)
-        // Update local cache based on where they logged in
-        if (localStorage.getItem('tf_token')) {
-          localStorage.setItem('tf_user', JSON.stringify(data.user))
-        } else {
-          sessionStorage.setItem('tf_user', JSON.stringify(data.user))
-        }
-      } catch {
-        // Validation failed (expired, tampered, deleted)
-        setUser(null)
-        localStorage.removeItem('tf_token')
-        sessionStorage.removeItem('tf_token')
-        localStorage.removeItem('tf_user')
-        sessionStorage.removeItem('tf_user')
-      } finally {
-        setIsAuthLoading(false)
-      }
-    }
-
-    validateSession()
+    sessionStorage.removeItem('tf_token')
+    sessionStorage.removeItem('tf_user')
   }, [])
 
   // Sync theme context with current user identity
@@ -93,16 +60,14 @@ export default function App() {
     setUserId(user?.id || null)
   }, [user?.id, setUserId])
 
-  const handleLoginSuccess = useCallback((userData, remember = true) => {
-    // Remove password field before storing in React state / localStorage
+  const handleLoginSuccess = useCallback((userData) => {
+    // Remove password field before storing in React state
     const safeUser = { ...userData }
     delete safeUser.password
     setUser(safeUser)
-    if (remember) {
-      localStorage.setItem('tf_user', JSON.stringify(safeUser))
-    } else {
-      sessionStorage.setItem('tf_user', JSON.stringify(safeUser))
-    }
+    // Store only in sessionStorage (tab-scoped, cleared on tab close).
+    // Persistent login across app restarts is intentionally disabled.
+    sessionStorage.setItem('tf_user', JSON.stringify(safeUser))
   }, [])
 
   const {

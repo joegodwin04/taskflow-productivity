@@ -257,7 +257,8 @@
 
 .metricItem:hover {
   border-color: var(--border-strong);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
 }
 
 .metricVal {
@@ -314,7 +315,7 @@
   outline: none;
   border-color: var(--border-focus);
   background: var(--bg-glass-md);
-  box-shadow: 0 0 0 3px var(--violet-glow);
+  box-shadow: 0 0 0 4px rgba(124,106,247,0.10);
 }
 
 .textarea {
@@ -359,6 +360,7 @@
 
 .toggleRow:hover {
   border-color: var(--border-strong);
+  background: var(--bg-glass);
 }
 
 .toggleMeta {

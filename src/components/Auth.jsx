@@ -17,7 +17,6 @@ export default function Auth({ onLoginSuccess }) {
   const [securityQuestion, setSecurityQuestion] = useState('What was the name of your first pet?')
   const [securityAnswer, setSecurityAnswer] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [remember, setRemember] = useState(true)
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const QUESTIONS = [
@@ -58,17 +57,14 @@ export default function Auth({ onLoginSuccess }) {
 
     try {
       if (mode === 'login') {
-        const data = await handleAuthApi('login', { email, password, remember })
-        if (remember) {
-          localStorage.setItem('tf_token', data.token)
-        } else {
-          sessionStorage.setItem('tf_token', data.token)
-        }
-        onLoginSuccess(data.user, remember)
+        const data = await handleAuthApi('login', { email, password })
+        // Always use sessionStorage — tab-scoped, never persists across app opens
+        sessionStorage.setItem('tf_token', data.token)
+        onLoginSuccess(data.user)
       } else if (mode === 'signup') {
         const data = await handleAuthApi('signup', { name, email, password, securityQuestion, securityAnswer })
-        localStorage.setItem('tf_token', data.token)
-        onLoginSuccess(data.user, true)
+        sessionStorage.setItem('tf_token', data.token)
+        onLoginSuccess(data.user)
       } else if (mode === 'forgot-password') {
         const data = await handleAuthApi('forgot-password/step1', { email })
         setSecurityQuestion(data.securityQuestion)
@@ -94,8 +90,8 @@ export default function Auth({ onLoginSuccess }) {
     setError('')
     try {
       const data = await handleAuthApi('guest', {})
-      localStorage.setItem('tf_token', data.token)
-      onLoginSuccess(data.user, true)
+      sessionStorage.setItem('tf_token', data.token)
+      onLoginSuccess(data.user)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -517,19 +513,6 @@ export default function Auth({ onLoginSuccess }) {
                   </>
                 )}
 
-                {mode === 'login' && (
-                  <div className={styles.metaRow}>
-                    <label className={styles.checkboxLabel}>
-                      <input
-                        type="checkbox"
-                        className={styles.checkbox}
-                        checked={remember}
-                        onChange={(e) => setRemember(e.target.checked)}
-                      />
-                      <span>Remember this device</span>
-                    </label>
-                  </div>
-                )}
 
                 {(mode === 'forgot-password' || mode === 'reset-password') && (
                   <div className={styles.metaRow}>

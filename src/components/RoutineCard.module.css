@@ -20,12 +20,12 @@
 }
 
 .card:hover {
-  border-color: rgba(255,255,255,0.12);
-  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.11);
+  transform: translateY(-1px);
   box-shadow: 
-    0 8px 24px rgba(0,0,0,0.35), 
-    0 2px 8px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.08);
+    0 6px 20px rgba(0,0,0,0.30), 
+    0 2px 8px rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.07);
 }
 
 [data-theme="light"] .card {
@@ -35,19 +35,20 @@
 }
 
 [data-theme="light"] .card:hover {
-  border-color: rgba(124,106,247,0.2);
+  border-color: rgba(124,106,247,0.18);
   box-shadow: 
-    0 8px 24px rgba(124,106,247,0.12),
-    0 2px 8px rgba(0,0,0,0.05);
+    0 6px 20px rgba(124,106,247,0.10),
+    0 2px 8px rgba(0,0,0,0.04);
+  transform: translateY(-1px);
 }
 
 /* ── Left colored stripe ── */
 .stripe {
   position: absolute;
   top: 0; left: 0; bottom: 0;
-  width: 4px;
+  width: 3.5px;
   background: linear-gradient(180deg, var(--violet) 0%, color-mix(in srgb, var(--violet) 30%, transparent) 100%);
-  opacity: 0.9;
+  opacity: 0.85;
   transition: opacity 0.3s;
 }
 

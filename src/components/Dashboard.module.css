@@ -87,10 +87,10 @@
 }
 
 .heroSub {
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--text-300);
-  font-weight: 450;
-  line-height: 1.5;
+  font-weight: 400;
+  line-height: 1.55;
 }
 
 .heroRight {
@@ -344,12 +344,12 @@
 }
 
 .statCard:hover {
-  border-color: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.13);
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.1) inset,
-    var(--shadow-lg),
-    0 0 40px rgba(0,0,0,0.2);
-  transform: translateY(-5px) scale(1.02);
+    0 1px 0 rgba(255,255,255,0.09) inset,
+    var(--shadow-md),
+    0 0 32px rgba(0,0,0,0.18);
+  transform: translateY(-3px);
 }
 
 .statGlow {
@@ -451,12 +451,12 @@
 }
 
 .widget:hover {
-  border-color: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.11);
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.09) inset,
-    var(--shadow-md),
-    0 16px 48px rgba(0,0,0,0.22);
-  transform: translateY(-3px);
+    0 1px 0 rgba(255,255,255,0.08) inset,
+    var(--shadow-sm),
+    0 12px 40px rgba(0,0,0,0.18);
+  transform: translateY(-2px);
 }
 
 /* Widget header */
@@ -646,7 +646,7 @@
   height: 100%;
   background: var(--cc, var(--violet));
   border-radius: 100px;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 /* ==========================================================================
@@ -667,10 +667,10 @@
 }
 
 .recentItem:hover {
-  background: rgba(124,106,247,0.07);
-  transform: translateX(4px);
-  border-color: rgba(124,106,247,0.2);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  background: rgba(124,106,247,0.06);
+  transform: translateX(2px);
+  border-color: rgba(124,106,247,0.18);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.10);
 }
 
 .recentDone { opacity: 0.42; }
@@ -813,8 +813,9 @@
 }
 
 [data-theme="light"] .statCard:hover {
-  border-color: rgba(124,106,247,0.22);
-  box-shadow: 0 8px 28px rgba(124,106,247,0.14), 0 2px 8px rgba(0,0,0,0.06);
+  border-color: rgba(124,106,247,0.20);
+  box-shadow: 0 6px 24px rgba(124,106,247,0.12), 0 2px 8px rgba(0,0,0,0.05);
+  transform: translateY(-3px);
 }
 
 [data-theme="light"] .statValue { color: #0f0e2a; }
@@ -831,8 +832,9 @@
 [data-theme="light"] .widget::before { display: none; }
 
 [data-theme="light"] .widget:hover {
-  border-color: rgba(124,106,247,0.22);
-  box-shadow: 0 8px 28px rgba(124,106,247,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  border-color: rgba(124,106,247,0.20);
+  box-shadow: 0 6px 24px rgba(124,106,247,0.10), 0 2px 8px rgba(0,0,0,0.05);
+  transform: translateY(-2px);
 }
 
 [data-theme="light"] .widgetTitle { color: #0f0e2a; font-size: 13.5px; }

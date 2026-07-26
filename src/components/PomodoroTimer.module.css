@@ -30,11 +30,12 @@
 }
 
 .wrap:hover {
-  border-color: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.11);
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.09) inset,
-    var(--shadow-md),
-    0 8px 40px rgba(0,0,0,0.25);
+    0 1px 0 rgba(255,255,255,0.08) inset,
+    var(--shadow-sm),
+    0 6px 32px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
 }
 
 .compact {
@@ -81,8 +82,8 @@
   background: var(--mc, var(--violet));
   color: white;
   box-shadow:
-    0 4px 12px color-mix(in srgb, var(--mc, var(--violet)) 35%, transparent),
-    inset 0 1px 0 rgba(255,255,255,0.2);
+    0 3px 10px color-mix(in srgb, var(--mc, var(--violet)) 30%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.18);
 }
 
 .modeTabActive:hover {
@@ -210,9 +211,9 @@
 
 .playBtn:hover {
   box-shadow:
-    0 6px 24px var(--mg, rgba(124,106,247,0.6)),
-    inset 0 1px 0 rgba(255,255,255,0.3);
-  filter: brightness(1.1);
+    0 8px 22px var(--mg, rgba(124,106,247,0.5)),
+    inset 0 1px 0 rgba(255,255,255,0.25);
+  filter: brightness(1.08);
 }
 
 .pauseBtn {
@@ -274,10 +275,10 @@
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
   transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
@@ -470,8 +471,9 @@
 }
 [data-theme="light"] .wrap::before { display: none; }
 [data-theme="light"] .wrap:hover {
-  border-color: rgba(124,106,247,0.18);
-  box-shadow: 0 8px 32px rgba(124,106,247,0.1);
+  border-color: rgba(124,106,247,0.16);
+  box-shadow: 0 6px 28px rgba(124,106,247,0.09);
+  transform: translateY(-1px);
 }
 
 [data-theme="light"] .modeTabs {
@@ -486,7 +488,7 @@
 }
 
 [data-theme="light"] .time {
-  background: linear-gradient(180deg, #1a1830 0%, #3c3960 100%);
+  background: linear-gradient(180deg, #0f0e2a 0%, #4a4780 100%);
   -webkit-background-clip: text;
   filter: none;
 }

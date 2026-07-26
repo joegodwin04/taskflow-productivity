@@ -43,7 +43,7 @@
   padding: 8px 12px; color: var(--text-100); font-size: 13px; font-family: inherit; outline: none; width: 100%;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(124,106,247,0.10); }
+.input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 4px rgba(124,106,247,0.08); }
 .input::placeholder { color: var(--text-400); }
 
 .formRow { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -61,9 +61,9 @@
   padding: 15px; background: rgba(255,255,255,0.03);
   border: 1px solid var(--border-subtle); border-left: 3px solid var(--gc, var(--violet));
   border-radius: var(--r-md); display: flex; flex-direction: column; gap: 11px;
-  cursor: default; transition: border-color 0.22s, box-shadow 0.22s, transform 0.2s;
+  cursor: default; transition: border-color 0.2s, box-shadow 0.2s, transform 0.18s;
 }
-.card:hover { border-color: color-mix(in srgb, var(--gc, var(--violet)) 30%, transparent); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.card:hover { border-color: color-mix(in srgb, var(--gc, var(--violet)) 28%, transparent); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 .cardDone { background: rgba(16,185,129,0.04); border-color: rgba(16,185,129,0.25) !important; border-left-color: var(--emerald) !important; }
 
 .cardTop { display: flex; align-items: center; gap: 11px; }
@@ -76,8 +76,8 @@
 .card:hover .delBtn { opacity: 1; }
 .delBtn:hover { color: var(--rose); background: var(--rose-dim); }
 
-.track { height: 7px; background: rgba(255,255,255,0.07); border-radius: var(--r-full); overflow: hidden; }
-.fill { height: 100%; background: var(--gc, var(--violet)); border-radius: var(--r-full); max-width: 100%; }
+.track { height: 6px; background: rgba(255,255,255,0.06); border-radius: var(--r-full); overflow: hidden; }
+.fill { height: 100%; background: var(--gc, var(--violet)); border-radius: var(--r-full); max-width: 100%; transition: width 0.4s var(--ease-smooth); }
 
 .cardBtns { display: flex; align-items: center; justify-content: space-between; }
 .minusBtn, .plusBtn {

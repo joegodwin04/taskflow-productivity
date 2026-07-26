@@ -8,11 +8,11 @@
   backdrop-filter: blur(18px);
   display: flex; flex-direction: column; gap: 14px;
   position: relative; overflow: hidden;
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--shadow-sm);
 }
 .wrap::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
 }
 
 .header {
@@ -68,7 +68,7 @@
   border-radius: var(--r-sm); padding: 8px 12px; color: var(--text-100);
   font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
 }
-.addInput:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(124,106,247,0.10); }
+.addInput:focus { border-color: var(--border-focus); box-shadow: 0 0 0 4px rgba(124,106,247,0.08); }
 .addInput::placeholder { color: var(--text-400); }
 .saveBtn {
   padding: 7px 16px; border-radius: var(--r-sm); border: none;
@@ -115,7 +115,7 @@
   border-color: color-mix(in srgb, var(--hc, var(--violet)) 42%, transparent);
   color: var(--hc, var(--violet));
 }
-.daydotToday { border-color: var(--violet-light) !important; border-width: 2px; }
+.daydotToday { border-color: rgba(124,106,247,0.65) !important; border-width: 2px; }
 
 .streakBadge {
   width: 46px; height: 28px; border-radius: var(--r-full);
@@ -135,7 +135,7 @@
 }
 [data-theme="light"] .wrap::before { display: none; }
 [data-theme="light"] .title { color: var(--text-100); }
-[data-theme="light"] .completionPill { background: rgba(124,106,247,0.08); border-color: var(--border-default); color: var(--violet); }
+[data-theme="light"] .completionPill { background: rgba(124,106,247,0.07); border-color: var(--border-default); color: var(--violet); }
 [data-theme="light"] .addBtn { background: var(--bg-form); border-color: var(--border-default); color: var(--text-200); }
 [data-theme="light"] .addBtn:hover { background: rgba(124,106,247,0.08); border-color: var(--border-strong); }
 [data-theme="light"] .addFormInner { background: var(--bg-form); border-color: var(--border-subtle); }

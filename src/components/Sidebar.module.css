@@ -13,12 +13,12 @@
 /* ── Core sidebar ── */
 .sidebar {
   position: fixed; top: 0; left: 0; height: 100vh;
-  background: rgba(8, 8, 20, 0.95);
+  background: rgba(6, 6, 18, 0.97);
   backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
   border-right: 1px solid var(--border-subtle);
   display: flex; flex-direction: column;
   z-index: 50; overflow: hidden;
-  box-shadow: 4px 0 60px rgba(0,0,0,0.55);
+  box-shadow: 2px 0 40px rgba(0,0,0,0.5);
   transition: transform 0.3s var(--ease-out);
 }
 .sidebar::before {
@@ -39,20 +39,20 @@
 }
 .logo {
   width: 34px; height: 34px; flex-shrink: 0; cursor: pointer;
-  filter: drop-shadow(0 0 12px rgba(124,106,247,0.5));
-  transition: filter 0.3s;
+  filter: drop-shadow(0 0 10px rgba(124,106,247,0.45));
+  transition: filter 0.28s;
 }
-.logo:hover { filter: drop-shadow(0 0 20px rgba(167,139,250,0.7)); }
+.logo:hover { filter: drop-shadow(0 0 18px rgba(167,139,250,0.65)); }
 .brandText { flex: 1; min-width: 0; overflow: hidden; }
 .brandName {
   display: block; font-size: 14.5px; font-weight: 900;
   background: linear-gradient(135deg, #7c6af7, #a78bfa 55%, #22d3ee);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  white-space: nowrap; line-height: 1.2; letter-spacing: -0.02em;
+  white-space: nowrap; line-height: 1.2; letter-spacing: -0.025em;
 }
 .brandSub {
-  display: block; font-size: 9.5px; color: var(--text-400);
-  font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+  display: block; font-size: 9px; color: var(--text-500);
+  font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
   white-space: nowrap; margin-top: 2px;
 }
 .collapseBtn {
@@ -73,45 +73,45 @@
 
 /* ── Nav ── */
 .nav {
-  flex: 1; padding: 10px 8px;
+  flex: 1; padding: 8px 8px;
   display: flex; flex-direction: column; gap: 1px;
   overflow-y: auto; overflow-x: hidden;
 }
 .navSection {
   font-size: 9px; font-weight: 700; color: var(--text-500);
-  letter-spacing: 0.12em; padding: 6px 10px 3px;
+  letter-spacing: 0.14em; padding: 10px 10px 4px;
   display: block; white-space: nowrap; text-transform: uppercase;
 }
 .navItem {
   position: relative; display: flex; align-items: center; gap: 9px;
-  padding: 9px 10px; border-radius: var(--r-md);
+  padding: 8px 10px; border-radius: var(--r-md);
   border: none; background: transparent; color: var(--text-400);
   cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500;
   text-align: left; width: 100%; white-space: nowrap; overflow: hidden;
-  transition: color 0.18s, background 0.18s;
-  min-height: 42px;
+  transition: color 0.15s, background 0.15s;
+  min-height: 40px;
 }
 .navItem:hover { color: var(--text-200); background: var(--bg-glass); }
 .navActive { color: var(--text-100) !important; }
 
 .activeIndicator {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(124,106,247,0.12), rgba(167,139,250,0.04));
+  background: linear-gradient(135deg, rgba(124,106,247,0.11), rgba(167,139,250,0.03));
   border-radius: var(--r-md);
-  border: 1px solid rgba(124,106,247,0.22);
-  border-left: 3.5px solid var(--violet);
+  border: 1px solid rgba(124,106,247,0.18);
+  border-left: 3px solid var(--violet);
   z-index: -1;
 }
 .navIcon {
-  width: 32px; height: 32px; border-radius: var(--r-sm);
+  width: 30px; height: 30px; border-radius: var(--r-sm);
   background: var(--bg-glass);
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: background 0.18s, box-shadow 0.18s;
+  flex-shrink: 0; transition: background 0.15s, box-shadow 0.15s;
 }
 .navIconActive {
   background: var(--violet-dim) !important;
   color: var(--violet-light);
-  box-shadow: 0 0 14px var(--violet-glow);
+  box-shadow: 0 0 10px var(--violet-glow);
 }
 .navLabel { flex: 1; }
 .badge {
@@ -124,18 +124,18 @@
 /* ── Bottom ── */
 .bottom { padding: 0; display: flex; flex-direction: column; gap: 0; flex-shrink: 0; }
 .progressCard {
-  margin: 8px 10px;
-  padding: 12px 14px;
-  background: rgba(124,106,247,0.07);
-  border: 1px solid rgba(124,106,247,0.15);
+  margin: 6px 10px 8px;
+  padding: 11px 14px;
+  background: rgba(124,106,247,0.06);
+  border: 1px solid rgba(124,106,247,0.13);
   border-radius: var(--r-md);
 }
 .progressTop { display: flex; justify-content: space-between; margin-bottom: 7px; }
-.progressLabel { font-size: 9.5px; color: var(--text-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
+.progressLabel { font-size: 9px; color: var(--text-400); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
 .progressPct { font-size: 11px; color: var(--violet-light); font-weight: 700; }
-.progressTrack { height: 4px; background: rgba(255,255,255,0.07); border-radius: var(--r-full); overflow: hidden; margin-bottom: 6px; }
-.progressFill { height: 100%; background: var(--grad-violet); border-radius: var(--r-full); box-shadow: 0 0 8px var(--violet-glow); }
-.progressMeta { display: flex; justify-content: space-between; font-size: 9.5px; color: var(--text-400); }
+.progressTrack { height: 4px; background: rgba(255,255,255,0.06); border-radius: var(--r-full); overflow: hidden; margin-bottom: 6px; }
+.progressFill { height: 100%; background: var(--grad-violet); border-radius: var(--r-full); box-shadow: 0 0 6px var(--violet-glow); }
+.progressMeta { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-400); }
 
 .themeBtn {
   display: flex; align-items: center; gap: 9px;
@@ -165,12 +165,12 @@
 }
 .userRow:hover { background: var(--bg-glass); }
 .avatar {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 30px; height: 30px; border-radius: 50%;
   background: var(--grad-violet);
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 800; color: white; flex-shrink: 0;
-  box-shadow: 0 0 14px var(--violet-glow);
-  border: 2px solid rgba(167,139,250,0.3);
+  box-shadow: 0 0 10px var(--violet-glow);
+  border: 1.5px solid rgba(167,139,250,0.35);
 }
 .userInfo { overflow: hidden; }
 .userName { display: block; font-size: 13px; font-weight: 700; color: var(--text-200); white-space: nowrap; letter-spacing: -0.01em; }
@@ -286,9 +286,9 @@
 [data-theme="light"] .navActive { color: var(--text-100) !important; }
 [data-theme="light"] .activeIndicator {
   /* Clean solid light background for active state */
-  background: linear-gradient(135deg, rgba(124,106,247,0.06), rgba(167,139,250,0.03));
-  border: 1px solid rgba(124,106,247,0.14);
-  border-left: 3.5px solid var(--violet);
+  background: linear-gradient(135deg, rgba(124,106,247,0.07), rgba(167,139,250,0.02));
+  border: 1px solid rgba(124,106,247,0.12);
+  border-left: 3px solid var(--violet);
 }
 [data-theme="light"] .navIcon {
   background: transparent;
@@ -299,7 +299,7 @@
   color: var(--text-200);
 }
 [data-theme="light"] .navIconActive {
-  background: rgba(124,106,247,0.10) !important;
+  background: rgba(124,106,247,0.09) !important;
   color: var(--violet) !important;
   box-shadow: none;
 }
