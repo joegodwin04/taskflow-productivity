@@ -15,6 +15,7 @@ import goalsRouter from './routes/goals.js'
 import pomodoroRouter from './routes/pomodoro.js'
 import usersRouter from './routes/users.js'
 import routinesRouter from './routes/routines.js'
+import { runRetentionCleanup } from './jobs/retentionCleanup.js'
 
 // Connect to Database and sync models
 await connectDB()
@@ -72,4 +73,16 @@ const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
   console.log(`🚀 TaskFlow server running on port ${PORT}`)
+
+  // Start background data retention cleanup
+  // Run once after 10 seconds to clean up immediately on startup
+  setTimeout(() => {
+    runRetentionCleanup()
+  }, 10 * 1000)
+
+  // Then run every 24 hours
+  const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+  setInterval(() => {
+    runRetentionCleanup()
+  }, TWENTY_FOUR_HOURS)
 })
